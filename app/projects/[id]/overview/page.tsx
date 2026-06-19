@@ -64,7 +64,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
       {/* 연구 개요 */}
       <SectionCard
         icon="info"
-        title="연구 개요"
+        title="Overview"
         action={
           <Link href={`/projects/${id}/edit`} className="flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-on-surface transition-colors">
             <span className="material-symbols-outlined text-[13px]">edit</span>

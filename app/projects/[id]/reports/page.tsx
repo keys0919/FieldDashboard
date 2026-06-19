@@ -67,10 +67,10 @@ export default async function ReportsPage({ params }: { params: Promise<{ id: st
   const todayStr = new Date().toISOString().slice(0, 10)
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-6 py-6 max-w-3xl">
       {/* 헤더 + 기간 범례 */}
-      <div className="flex items-start justify-between mb-6 gap-4">
-        <h1 className="text-xl font-bold text-on-surface tracking-tight shrink-0">리포트</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-bold text-on-surface tracking-tight">리포트</h1>
         {periods.length > 0 && (
           <div className="flex flex-wrap gap-2 justify-end">
             {periods.map(p => (

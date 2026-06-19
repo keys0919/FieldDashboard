@@ -217,7 +217,7 @@ export default function DayReport({
             {projectClient && (
               <p className="text-[10px] font-medium text-on-surface-variant tracking-widest uppercase mb-1">{projectClient}</p>
             )}
-            <h1 className="text-2xl font-bold text-on-surface tracking-tight">{projectName}</h1>
+            <h1 className="text-xl font-bold text-on-surface tracking-tight">{projectName}</h1>
           </div>
           <div className="text-right shrink-0">
             <p className="text-[10px] text-on-surface-variant mb-0.5">조사 일자</p>

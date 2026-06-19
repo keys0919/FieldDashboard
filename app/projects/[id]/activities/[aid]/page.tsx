@@ -21,7 +21,7 @@ export default async function ActivityDetailPage({
   const typeLabel = (project.activity_types ?? []).find((t: { key: string }) => t.key === activity.type_key)?.label ?? activity.type_key
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-6 py-6 max-w-3xl">
       <ActivityDetail
         projectId={id}
         activity={activity}

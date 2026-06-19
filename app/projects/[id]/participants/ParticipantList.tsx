@@ -29,7 +29,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'activity', label: 'Activity' },
 ]
 
-const COL = 'grid-cols-[3.5rem_minmax(0,2fr)_minmax(0,1fr)_5rem_5rem_9rem_6rem]'
+const COL = 'grid-cols-[2.5rem_minmax(0,2fr)_minmax(0,1fr)_2rem_3rem_5.5rem_4.5rem]'
 
 interface Participant {
   id: string
@@ -161,7 +161,7 @@ export default function ParticipantList({ projectId, participants, actCount }: P
       {/* 테이블 */}
       <div className="glass-card rounded-xl overflow-hidden">
         {/* 헤더 */}
-        <div className={`grid ${COL} gap-x-6 px-5 py-2.5 bg-surface-container border-b border-outline-variant`}>
+        <div className={`grid ${COL} gap-x-4 px-5 py-2.5 bg-surface-container border-b border-outline-variant`}>
           {[
             { label: 'ID' },
             { label: '이름' },
@@ -187,7 +187,7 @@ export default function ParticipantList({ projectId, participants, actCount }: P
             <Link
               key={p.id}
               href={`/projects/${projectId}/participants/${p.id}`}
-              className={`grid ${COL} gap-x-6 items-center px-5 py-3 hover:bg-surface-container-low transition-colors group ${
+              className={`grid ${COL} gap-x-4 items-center px-5 py-3 hover:bg-surface-container-low transition-colors group ${
                 i > 0 ? 'border-t border-outline-variant/40' : ''
               }`}
             >

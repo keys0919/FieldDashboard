@@ -43,8 +43,8 @@ export default async function DayReportPage({ params }: { params: Promise<{ id: 
   for (const t of project.activity_types ?? []) typeLabels[t.key] = t.label
 
   return (
-    <div className="px-6 py-6">
-      <div className="mb-5">
+    <div className="px-6 py-6 max-w-3xl">
+      <div className="mb-6">
         <Link href={`/projects/${id}/reports`} className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-on-surface transition-colors">
           <span className="material-symbols-outlined text-[14px]">arrow_back</span>
           리포트 목록

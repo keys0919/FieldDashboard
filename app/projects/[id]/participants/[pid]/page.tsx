@@ -175,7 +175,7 @@ export default async function ParticipantDetailPage({
 
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-mono text-on-surface-variant tracking-wider mb-0.5">ID: {participant.id}</p>
-            <h1 className="text-2xl font-bold text-on-surface tracking-tight mb-2">{participant.name}</h1>
+            <h1 className="text-xl font-bold text-on-surface tracking-tight mb-2">{participant.name}</h1>
             <div className="flex flex-wrap items-center gap-2">
               {participant.group && (
                 <span className="flex items-center gap-1 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-semibold">
@@ -204,7 +204,7 @@ export default async function ParticipantDetailPage({
         <details className="mt-5 pt-5 border-t border-outline-variant group">
             <summary className="flex items-center gap-2 cursor-pointer list-none text-[11px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors select-none">
               <span className="material-symbols-outlined text-[15px]">assignment_ind</span>
-              스크리너 프로필 보기
+              상세 프로필
               <span className="material-symbols-outlined text-[14px] ml-auto transition-transform group-open:rotate-180">expand_more</span>
             </summary>
             <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">

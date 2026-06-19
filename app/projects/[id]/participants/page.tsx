@@ -26,7 +26,7 @@ export default async function ParticipantsPage({ params }: { params: Promise<{ i
   const schema: ScreenerQuestion[] = project.screener_schema ?? []
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-6 py-6 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-on-surface tracking-tight">참여자</h1>
         <Link
