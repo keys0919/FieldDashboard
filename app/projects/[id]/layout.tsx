@@ -42,18 +42,6 @@ export default async function ProjectLayout({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 ml-4">
-          {project.share_token && (
-            <Link
-              href={`/share/${project.share_token}`}
-              target="_blank"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary bg-secondary-container/60 hover:bg-secondary-container rounded-full transition-colors"
-            >
-              <span className="material-symbols-outlined text-[14px]">share</span>
-              <span className="hidden sm:inline">공유</span>
-            </Link>
-          )}
-        </div>
       </header>
 
       {/* Body */}
