@@ -1,26 +1,124 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ── Color tokens (Material Design 3 / Field Ops Precision) ── */
+  --color-surface:                   #fcf8fa;
+  --color-surface-bright:            #fcf8fa;
+  --color-surface-dim:               #dcd9db;
+  --color-surface-variant:           #e4e2e4;
+  --color-surface-container-lowest:  #ffffff;
+  --color-surface-container-low:     #f6f3f5;
+  --color-surface-container:         #f0edef;
+  --color-surface-container-high:    #eae7e9;
+  --color-surface-container-highest: #e4e2e4;
+
+  --color-on-surface:                #1b1b1d;
+  --color-on-surface-variant:        #45464d;
+  --color-inverse-surface:           #303032;
+  --color-inverse-on-surface:        #f3f0f2;
+
+  --color-primary:                   #000000;
+  --color-on-primary:                #ffffff;
+  --color-primary-container:         #131b2e;
+  --color-on-primary-container:      #7c839b;
+  --color-primary-fixed:             #dae2fd;
+  --color-primary-fixed-dim:         #bec6e0;
+  --color-on-primary-fixed:          #131b2e;
+  --color-on-primary-fixed-variant:  #3f465c;
+  --color-inverse-primary:           #bec6e0;
+
+  --color-secondary:                 #505f76;
+  --color-on-secondary:              #ffffff;
+  --color-secondary-container:       #d0e1fb;
+  --color-on-secondary-container:    #54647a;
+  --color-secondary-fixed:           #d3e4fe;
+  --color-secondary-fixed-dim:       #b7c8e1;
+  --color-on-secondary-fixed:        #0b1c30;
+  --color-on-secondary-fixed-variant: #38485d;
+
+  --color-tertiary:                  #000000;
+  --color-on-tertiary:               #ffffff;
+  --color-tertiary-container:        #271901;
+  --color-on-tertiary-container:     #98805d;
+  --color-tertiary-fixed:            #fcdeb5;
+  --color-tertiary-fixed-dim:        #dec29a;
+  --color-on-tertiary-fixed:         #271901;
+  --color-on-tertiary-fixed-variant: #574425;
+
+  --color-outline:                   #76777d;
+  --color-outline-variant:           #c6c6cd;
+
+  --color-background:                #fcf8fa;
+  --color-on-background:             #1b1b1d;
+
+  --color-error:                     #ba1a1a;
+  --color-on-error:                  #ffffff;
+  --color-error-container:           #ffdad6;
+  --color-on-error-container:        #93000a;
+
+  --color-surface-tint:              #565e74;
+
+  /* ── Typography ── */
+  --font-sans:      'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display:   'Pretendard Variable', 'Pretendard', sans-serif;
+  --font-heading:   'Pretendard Variable', 'Pretendard', sans-serif;
+  --font-mono:      'Geist Mono', ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Glass utilities ── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid #e4e2e4;
 }
+
+.glass-header {
+  background: rgba(252, 248, 250, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Material Symbols ── */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c6c6cd; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #76777d; }
+
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #fcf8fa;
+  color: #1b1b1d;
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: max(884px, 100dvh);
+}
+
+@media print {
+  @page { margin: 20mm 18mm; size: A4; }
+
+  /* 사이드바, 헤더, 네비게이션 숨김 */
+  header, aside, nav, .glass-header { display: none !important; }
+
+  /* 본문 전체 너비 사용 */
+  main { overflow: visible !important; padding: 0 !important; }
+  body { background: white !important; min-height: unset; }
+
+  /* 색상 강제 유지 */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* 섹션 페이지 분리 방지 */
+  section { break-inside: avoid; }
+  blockquote { break-inside: avoid; }
 }
