@@ -168,9 +168,9 @@ export default function ParticipantList({ projectId, participants, actCount }: P
           </div>
         </div>
 
-        {/* 컬럼 헤더 — data container와 동일한 px-6 중첩으로 정렬 일치 */}
+        {/* 컬럼 헤더 — data container와 동일한 px-6 + max-w-3xl로 정렬 일치 */}
         <div className="px-6 pb-2">
-        <div className={`grid ${COL} gap-x-4 px-6 py-2.5 bg-surface-container-low rounded-t-xl`}>
+        <div className={`grid ${COL} gap-x-4 px-6 py-2.5 bg-surface-container-low rounded-t-xl max-w-3xl`}>
           {[
             { label: 'ID' },
             { label: '이름' },
@@ -193,7 +193,7 @@ export default function ParticipantList({ projectId, participants, actCount }: P
 
       {/* 데이터 행 */}
       <div className="px-6 pb-4">
-        <div className="glass-card rounded-b-xl overflow-hidden">
+        <div className="glass-card rounded-b-xl overflow-hidden max-w-3xl">
           {sorted.map((p, i) => {
             const cnt = actCount[p.id] ?? { total: 0, done: 0 }
             return (
