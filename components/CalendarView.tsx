@@ -112,7 +112,7 @@ export default function CalendarView({ projectId, activities, activityTypeLabels
   return (
     <div className="pb-4">
       {/* Sticky 헤더: 월 내비 + 범례 + 요일 */}
-      <div className="sticky top-14 z-10 bg-surface border-b border-outline-variant/40 -mx-6 px-6 pb-2">
+      <div className="sticky top-14 z-10 bg-surface px-6 pb-2">
         {/* 월 내비 + 범례 */}
         <div className="flex items-center justify-between py-3">
           <div className="flex items-center gap-1">
@@ -145,7 +145,7 @@ export default function CalendarView({ projectId, activities, activityTypeLabels
       </div>
 
       {/* 날짜 그리드 */}
-      <div className="border-l border-t border-outline-variant/50 rounded-b-lg overflow-hidden mt-0">
+      <div className="mx-6 border-l border-t border-outline-variant/50 rounded-lg overflow-hidden mt-2">
         {weeks.map((week, wi) => (
           <div key={wi} className="grid grid-cols-7 min-h-[6.5rem]">
             {week.map((day, ci) => {

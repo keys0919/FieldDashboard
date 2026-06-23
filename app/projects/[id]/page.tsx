@@ -39,8 +39,8 @@ export default async function ProjectPage({
   }
 
   return (
-    <div className="px-6 pt-5 pb-4">
-      <h1 className="text-xl font-bold text-on-surface tracking-tight mb-4">캘린더</h1>
+    <div className="pt-5 pb-4">
+      <h1 className="text-xl font-bold text-on-surface tracking-tight mb-4 px-6">캘린더</h1>
       <Suspense>
         <CalendarView
           projectId={id}
