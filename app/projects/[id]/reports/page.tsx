@@ -69,8 +69,8 @@ export default async function ReportsPage({ params }: { params: Promise<{ id: st
   return (
     <div>
       {/* Sticky 헤더: 타이틀 + 기간 범례 */}
-      <div className="sticky top-14 z-10 bg-surface px-6 py-4">
-        <div className="max-w-3xl flex items-center justify-between">
+      <div className="sticky top-14 z-10 bg-surface py-4">
+        <div className="max-w-3xl px-6 flex items-center justify-between">
           <h1 className="text-xl font-bold text-on-surface tracking-tight shrink-0">리포트</h1>
           {periods.length > 0 && (
             <div className="flex flex-wrap gap-2 justify-end">
