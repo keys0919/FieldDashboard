@@ -67,9 +67,9 @@ export default async function ReportsPage({ params }: { params: Promise<{ id: st
   const todayStr = new Date().toISOString().slice(0, 10)
 
   return (
-    <div className="px-6 py-6 max-w-3xl">
-      {/* 헤더 + 기간 범례 */}
-      <div className="flex items-center justify-between mb-6">
+    <div>
+      {/* Sticky 헤더: 타이틀 + 기간 범례 */}
+      <div className="sticky top-14 z-10 bg-surface border-b border-outline-variant/60 px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-on-surface tracking-tight">리포트</h1>
         {periods.length > 0 && (
           <div className="flex flex-wrap gap-2 justify-end">
@@ -82,6 +82,7 @@ export default async function ReportsPage({ params }: { params: Promise<{ id: st
         )}
       </div>
 
+      <div className="px-6 py-6 max-w-3xl">
       {dates.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-on-surface-variant">
           <span className="material-symbols-outlined text-[40px] opacity-30 mb-3">analytics</span>
@@ -165,6 +166,7 @@ export default async function ReportsPage({ params }: { params: Promise<{ id: st
           })}
         </div>
       )}
+      </div>
     </div>
   )
 }

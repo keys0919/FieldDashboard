@@ -110,44 +110,44 @@ export default function CalendarView({ projectId, activities, activityTypeLabels
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 pb-2">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4 shrink-0">
-        <div className="flex items-center gap-1">
-          <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors">
-            <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-          </button>
-          <h2 className="text-base font-bold text-on-surface tabular-nums tracking-tight w-24 text-center">
-            {year}. {String(month).padStart(2, '0')}
-          </h2>
-          <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors">
-            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-          </button>
+    <div className="pb-4">
+      {/* Sticky 헤더: 월 내비 + 범례 + 요일 */}
+      <div className="sticky top-14 z-10 bg-surface border-b border-outline-variant/40 -mx-6 px-6 pb-2">
+        {/* 월 내비 + 범례 */}
+        <div className="flex items-center justify-between py-3">
+          <div className="flex items-center gap-1">
+            <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors">
+              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
+            <h2 className="text-base font-bold text-on-surface tabular-nums tracking-tight w-24 text-center">
+              {year}. {String(month).padStart(2, '0')}
+            </h2>
+            <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors">
+              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
+          {/* 범례 */}
+          <div className="flex items-center gap-3 flex-1 px-4">
+            {periods.map(p => (
+              <div key={p.key} className="flex items-center gap-1">
+                <span className={`w-3 h-3 rounded-sm shrink-0 ${PERIOD_BG[p.colorIdx % PERIOD_BG.length]}`} />
+                <span className="text-[10px] text-on-surface-variant truncate">{p.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
-
-        {/* 범례 */}
-        <div className="flex items-center gap-3 flex-1 px-4">
-          {periods.map(p => (
-            <div key={p.key} className="flex items-center gap-1">
-              <span className={`w-3 h-3 rounded-sm shrink-0 ${PERIOD_BG[p.colorIdx % PERIOD_BG.length]}`} />
-              <span className="text-[10px] text-on-surface-variant truncate">{p.label}</span>
-            </div>
+        {/* 요일 헤더 */}
+        <div className="grid grid-cols-7">
+          {DAYS.map(d => (
+            <div key={d} className="text-[11px] text-center text-on-surface-variant py-1.5 font-bold uppercase tracking-wider">{d}</div>
           ))}
         </div>
-
       </div>
 
-      {/* 요일 헤더 */}
-      <div className="grid grid-cols-7 mb-px shrink-0">
-        {DAYS.map(d => (
-          <div key={d} className="text-[11px] text-center text-on-surface-variant py-2 font-bold uppercase tracking-wider">{d}</div>
-        ))}
-      </div>
-
-      {/* 날짜 그리드 — 주 단위 flex row */}
-      <div className="flex flex-col flex-1 min-h-0 border-l border-t border-outline-variant/50 rounded-lg overflow-hidden">
+      {/* 날짜 그리드 */}
+      <div className="border-l border-t border-outline-variant/50 rounded-b-lg overflow-hidden mt-0">
         {weeks.map((week, wi) => (
-          <div key={wi} className="flex-1 grid grid-cols-7 min-h-0">
+          <div key={wi} className="grid grid-cols-7 min-h-[6.5rem]">
             {week.map((day, ci) => {
               const colIdx  = ci  // 0=월 6=일
               const dateStr = day

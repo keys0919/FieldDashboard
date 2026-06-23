@@ -26,23 +26,24 @@ export default async function ParticipantsPage({ params }: { params: Promise<{ i
   const schema: ScreenerQuestion[] = project.screener_schema ?? []
 
   return (
-    <div className="px-6 py-6 max-w-3xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-on-surface tracking-tight">참여자</h1>
-        <Link
-          href={`/projects/${id}/participants/new`}
-          className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-full hover:opacity-90 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-[14px]">person_add</span>
-          추가
-        </Link>
-      </div>
-
+    <div>
       {(!participants || participants.length === 0) ? (
-        <div className="flex flex-col items-center justify-center py-24 text-on-surface-variant">
-          <span className="material-symbols-outlined text-[40px] opacity-30 mb-3">group</span>
-          <p className="text-sm font-medium">참여자가 없습니다</p>
-          <p className="text-xs mt-1 opacity-60">참여자를 추가해 시작하세요</p>
+        <div className="px-6 py-6 max-w-3xl">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-xl font-bold text-on-surface tracking-tight">참여자</h1>
+            <Link
+              href={`/projects/${id}/participants/new`}
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-full hover:opacity-90 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-[14px]">person_add</span>
+              추가
+            </Link>
+          </div>
+          <div className="flex flex-col items-center justify-center py-24 text-on-surface-variant">
+            <span className="material-symbols-outlined text-[40px] opacity-30 mb-3">group</span>
+            <p className="text-sm font-medium">참여자가 없습니다</p>
+            <p className="text-xs mt-1 opacity-60">참여자를 추가해 시작하세요</p>
+          </div>
         </div>
       ) : (
         <ParticipantList

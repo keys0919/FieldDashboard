@@ -27,7 +27,7 @@ export default function ProjectSidebar({ projectId }: Props) {
   }
 
   return (
-    <aside className="hidden lg:flex flex-col gap-2 p-4 h-full w-64 bg-surface-container border-r border-outline-variant shrink-0 overflow-y-auto">
+    <aside className="hidden lg:flex flex-col gap-2 p-4 fixed top-14 bottom-0 left-0 w-64 bg-surface-container border-r border-outline-variant overflow-y-auto z-10">
       {/* 내비게이션 */}
       <nav className="flex flex-col gap-0.5">
         {NAV.map(item => {

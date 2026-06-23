@@ -90,78 +90,86 @@ export default function ParticipantList({ projectId, participants, actCount }: P
   })
 
   return (
-    <div className="space-y-3">
-      {/* 정렬 드롭다운 */}
-      <div className="flex justify-end">
-        <div className="relative" ref={dropdownRef}>
-          <button
-            onClick={() => setOpen(v => !v)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-medium transition-colors ${
-              sortKey !== 'id' || sortDir !== 'asc'
-                ? 'border-primary/40 bg-primary/5 text-primary'
-                : 'border-outline-variant bg-surface text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[13px]">swap_vert</span>
-            <span>
-              {sortKey === 'id' && sortDir === 'asc'
-                ? '정렬'
-                : `정렬 · ${currentLabel}`}
-            </span>
-            <span className="material-symbols-outlined text-[12px] opacity-50">expand_more</span>
-          </button>
+    <div>
+      {/* Sticky 헤더: 타이틀 + 정렬 + 컬럼 헤더 */}
+      <div className="sticky top-14 z-10 bg-surface border-b border-outline-variant/60">
+        {/* 타이틀 행 */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-3">
+          <h1 className="text-xl font-bold text-on-surface tracking-tight">참여자</h1>
+          <div className="flex items-center gap-2">
+            {/* 정렬 드롭다운 */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setOpen(v => !v)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-medium transition-colors ${
+                  sortKey !== 'id' || sortDir !== 'asc'
+                    ? 'border-primary/40 bg-primary/5 text-primary'
+                    : 'border-outline-variant bg-surface text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[13px]">swap_vert</span>
+                <span>
+                  {sortKey === 'id' && sortDir === 'asc' ? '정렬' : `정렬 · ${currentLabel}`}
+                </span>
+                <span className="material-symbols-outlined text-[12px] opacity-50">expand_more</span>
+              </button>
 
-          {open && (
-            <div className="absolute right-0 top-full mt-1.5 w-44 bg-surface border border-outline-variant rounded-xl shadow-lg z-20 overflow-hidden">
-              {/* 기준 */}
-              <div className="px-3 pt-2.5 pb-1">
-                <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">기준</p>
-              </div>
-              {SORT_OPTIONS.map(opt => {
-                const active = sortKey === opt.key
-                return (
-                  <button
-                    key={opt.key}
-                    onClick={() => { setSortKey(opt.key); setOpen(false) }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-surface-container transition-colors ${
-                      active ? 'text-primary font-semibold' : 'text-on-surface'
-                    }`}
-                  >
-                    <span className={`material-symbols-outlined text-[13px] ${active ? 'opacity-100' : 'opacity-0'}`}>check</span>
-                    {opt.label}
-                  </button>
-                )
-              })}
-
-              {/* 방향 */}
-              <div className="px-3 pt-2.5 pb-1 mt-1 border-t border-outline-variant/40">
-                <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">방향</p>
-              </div>
-              {(['asc', 'desc'] as const).map(dir => (
-                <button
-                  key={dir}
-                  onClick={() => { setSortDir(dir); setOpen(false) }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-surface-container transition-colors ${
-                    sortDir === dir ? 'text-primary font-semibold' : 'text-on-surface'
-                  }`}
-                >
-                  <span className={`material-symbols-outlined text-[13px] ${sortDir === dir ? 'opacity-100' : 'opacity-0'}`}>check</span>
-                  <span className="material-symbols-outlined text-[13px] text-on-surface-variant">
-                    {dir === 'asc' ? 'arrow_upward' : 'arrow_downward'}
-                  </span>
-                  {dir === 'asc' ? '오름차순' : '내림차순'}
-                </button>
-              ))}
-              <div className="h-2" />
+              {open && (
+                <div className="absolute right-0 top-full mt-1.5 w-44 bg-surface border border-outline-variant rounded-xl shadow-lg z-20 overflow-hidden">
+                  <div className="px-3 pt-2.5 pb-1">
+                    <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">기준</p>
+                  </div>
+                  {SORT_OPTIONS.map(opt => {
+                    const active = sortKey === opt.key
+                    return (
+                      <button
+                        key={opt.key}
+                        onClick={() => { setSortKey(opt.key); setOpen(false) }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-surface-container transition-colors ${
+                          active ? 'text-primary font-semibold' : 'text-on-surface'
+                        }`}
+                      >
+                        <span className={`material-symbols-outlined text-[13px] ${active ? 'opacity-100' : 'opacity-0'}`}>check</span>
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                  <div className="px-3 pt-2.5 pb-1 mt-1 border-t border-outline-variant/40">
+                    <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">방향</p>
+                  </div>
+                  {(['asc', 'desc'] as const).map(dir => (
+                    <button
+                      key={dir}
+                      onClick={() => { setSortDir(dir); setOpen(false) }}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-surface-container transition-colors ${
+                        sortDir === dir ? 'text-primary font-semibold' : 'text-on-surface'
+                      }`}
+                    >
+                      <span className={`material-symbols-outlined text-[13px] ${sortDir === dir ? 'opacity-100' : 'opacity-0'}`}>check</span>
+                      <span className="material-symbols-outlined text-[13px] text-on-surface-variant">
+                        {dir === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+                      </span>
+                      {dir === 'asc' ? '오름차순' : '내림차순'}
+                    </button>
+                  ))}
+                  <div className="h-2" />
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* 테이블 */}
-      <div className="glass-card rounded-xl overflow-hidden">
-        {/* 헤더 */}
-        <div className={`grid ${COL} gap-x-4 px-5 py-2.5 bg-surface-container border-b border-outline-variant`}>
+            {/* 추가 버튼 */}
+            <Link
+              href={`/projects/${projectId}/participants/new`}
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-full hover:opacity-90 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-[14px]">person_add</span>
+              추가
+            </Link>
+          </div>
+        </div>
+
+        {/* 컬럼 헤더 */}
+        <div className={`grid ${COL} gap-x-4 px-6 py-2.5 bg-surface-container-low border-t border-outline-variant/40`}>
           {[
             { label: 'ID' },
             { label: '이름' },
@@ -179,49 +187,45 @@ export default function ParticipantList({ projectId, participants, actCount }: P
             </span>
           ))}
         </div>
+      </div>
 
-        {/* 행 */}
-        {sorted.map((p, i) => {
-          const cnt = actCount[p.id] ?? { total: 0, done: 0 }
-          return (
-            <Link
-              key={p.id}
-              href={`/projects/${projectId}/participants/${p.id}`}
-              className={`grid ${COL} gap-x-4 items-center px-5 py-3 hover:bg-surface-container-low transition-colors group ${
-                i > 0 ? 'border-t border-outline-variant/40' : ''
-              }`}
-            >
-              <span className="text-[11px] font-bold font-mono text-on-surface-variant">{p.id}</span>
-
-              <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors truncate">
-                {p.name}
-              </span>
-
-              <span className="text-[12px] text-on-surface-variant truncate">
-                {p.group ?? <span className="opacity-30">—</span>}
-              </span>
-
-              <span className="text-[12px] text-on-surface-variant text-center">
-                {p.gender ?? <span className="opacity-30">—</span>}
-              </span>
-
-              <span className="text-[12px] font-mono text-on-surface-variant text-right tabular-nums">
-                {p.age != null ? `${p.age}세` : <span className="opacity-30">—</span>}
-              </span>
-
-              <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border w-fit ${STATUS_CHIP[p.status] ?? 'bg-surface-container-high text-on-surface-variant border border-outline-variant'}`}>
-                {STATUS_LABEL[p.status] ?? p.status}
-              </span>
-
-              <div className="text-right tabular-nums">
-                <span className="text-sm font-semibold text-on-surface">{cnt.total}</span>
-                {cnt.total > 0 && (
-                  <span className="text-[10px] text-on-surface-variant ml-1">({cnt.done})</span>
-                )}
-              </div>
-            </Link>
-          )
-        })}
+      {/* 데이터 행 */}
+      <div className="px-6 py-4 max-w-3xl">
+        <div className="glass-card rounded-xl overflow-hidden">
+          {sorted.map((p, i) => {
+            const cnt = actCount[p.id] ?? { total: 0, done: 0 }
+            return (
+              <Link
+                key={p.id}
+                href={`/projects/${projectId}/participants/${p.id}`}
+                className={`grid ${COL} gap-x-4 items-center px-5 py-3 hover:bg-surface-container-low transition-colors group ${
+                  i > 0 ? 'border-t border-outline-variant/40' : ''
+                }`}
+              >
+                <span className="text-[11px] font-bold font-mono text-on-surface-variant">{p.id}</span>
+                <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors truncate">{p.name}</span>
+                <span className="text-[12px] text-on-surface-variant truncate">
+                  {p.group ?? <span className="opacity-30">—</span>}
+                </span>
+                <span className="text-[12px] text-on-surface-variant text-center">
+                  {p.gender ?? <span className="opacity-30">—</span>}
+                </span>
+                <span className="text-[12px] font-mono text-on-surface-variant text-right tabular-nums">
+                  {p.age != null ? `${p.age}세` : <span className="opacity-30">—</span>}
+                </span>
+                <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border w-fit ${STATUS_CHIP[p.status] ?? 'bg-surface-container-high text-on-surface-variant border border-outline-variant'}`}>
+                  {STATUS_LABEL[p.status] ?? p.status}
+                </span>
+                <div className="text-right tabular-nums">
+                  <span className="text-sm font-semibold text-on-surface">{cnt.total}</span>
+                  {cnt.total > 0 && (
+                    <span className="text-[10px] text-on-surface-variant ml-1">({cnt.done})</span>
+                  )}
+                </div>
+              </Link>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

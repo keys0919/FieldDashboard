@@ -22,9 +22,9 @@ export default async function ProjectLayout({
   if (!project) notFound()
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="min-h-screen">
       {/* Top App Bar */}
-      <header className="glass-header border-b border-outline-variant/60 h-14 flex items-center px-4 lg:px-6 shrink-0 z-20 sticky top-0">
+      <header className="glass-header border-b border-outline-variant/60 h-14 flex items-center px-4 lg:px-6 z-20 fixed top-0 left-0 right-0">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Link href="/" className="flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors shrink-0">
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -45,9 +45,9 @@ export default async function ProjectLayout({
       </header>
 
       {/* Body */}
-      <div className="flex flex-1 overflow-hidden min-h-0">
+      <div className="flex pt-14">
         <ProjectSidebar projectId={id} />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-surface pb-16 lg:pb-0 flex flex-col min-h-0">
+        <main className="flex-1 overflow-x-hidden bg-surface pb-16 lg:pb-0 flex flex-col lg:pl-64 min-h-[calc(100vh-3.5rem)]">
           {children}
         </main>
       </div>
