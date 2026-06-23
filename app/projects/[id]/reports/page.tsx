@@ -69,10 +69,10 @@ export default async function ReportsPage({ params }: { params: Promise<{ id: st
   return (
     <div>
       {/* Sticky 헤더: 타이틀 + 기간 범례 */}
-      <div className="sticky top-14 z-10 bg-surface px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-on-surface tracking-tight">리포트</h1>
+      <div className="sticky top-14 z-10 bg-surface px-6 py-4 flex items-center gap-6">
+        <h1 className="text-xl font-bold text-on-surface tracking-tight shrink-0">리포트</h1>
         {periods.length > 0 && (
-          <div className="flex flex-wrap gap-2 justify-end">
+          <div className="flex flex-wrap gap-2">
             {periods.map(p => (
               <span key={p.key} className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${PERIOD_BG[p.colorIdx % PERIOD_BG.length]} ${PERIOD_TEXT[p.colorIdx % PERIOD_TEXT.length]}`}>
                 {p.label}
