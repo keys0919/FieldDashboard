@@ -46,7 +46,7 @@ function typeIcon(typeKey: string) {
 
 function SectionLabel({ num, title, action }: { num: string; title: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 mb-5">
+    <div className="print-section-label flex items-center gap-3 mb-5">
       <span className="text-[10px] font-bold text-on-surface-variant font-mono tracking-widest opacity-50">{num}</span>
       <h2 className="text-sm font-bold text-on-surface tracking-tight">{title}</h2>
       <div className="flex-1 h-px bg-outline-variant/50" />
@@ -303,7 +303,7 @@ export default function DayReport({
         {hasFindings && (
           <div className="space-y-3 mb-2">
             {findings.map(f => (
-              <div key={f.id} className="print-block flex gap-4 py-3 border-b border-outline-variant/40 last:border-0">
+              <div key={f.id} className="flex gap-4 py-3 border-b border-outline-variant/40 last:border-0">
                 <span className={`text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border h-fit mt-0.5 shrink-0 ${FINDING_CHIP[f.type] ?? FINDING_CHIP.observation}`}>
                   {FINDING_TYPE_LABEL[f.type] ?? f.type}
                 </span>
@@ -314,7 +314,7 @@ export default function DayReport({
               </div>
             ))}
             {(summary?.key_patterns ?? []).map((p, i) => (
-              <div key={i} className="print-block flex gap-4 py-3 border-b border-outline-variant/40 last:border-0">
+              <div key={i} className="flex gap-4 py-3 border-b border-outline-variant/40 last:border-0">
                 <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border h-fit mt-0.5 shrink-0 bg-surface-container-high text-on-surface-variant border-outline-variant">
                   패턴
                 </span>

@@ -118,7 +118,11 @@ body {
   /* 색상 강제 유지 */
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-  /* 개별 블록 단위 페이지 분리 방지 (section 전체에 걸면 긴 섹션이 1페이지에서 잘림) */
+  /* 섹션은 자유롭게 나뉨 — 섹션 헤더만 고아 방지 */
+  section { break-inside: auto; }
+  .print-section-label { break-after: avoid; }
+
+  /* 참여자 단위 블록은 통째로 유지 (헤더+내용 분리 방지) */
   blockquote { break-inside: avoid; }
   .print-block { break-inside: avoid; }
 }
