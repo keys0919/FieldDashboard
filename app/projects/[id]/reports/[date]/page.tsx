@@ -11,7 +11,7 @@ export default async function DayReportPage({ params }: { params: Promise<{ id: 
     sb.from('projects').select('id, name, client, activity_types').eq('id', id).single(),
     sb.from('activities').select('*').eq('project_id', id).eq('date', date).order('participant_id'),
     sb.from('summaries').select('*').eq('project_id', id).eq('date', date).maybeSingle(),
-    sb.from('findings').select('*').eq('project_id', id).eq('created_at', date).order('created_at', { ascending: false }),
+    sb.from('findings').select('*').eq('project_id', id).order('created_at', { ascending: false }),
   ])
 
   if (!project) notFound()

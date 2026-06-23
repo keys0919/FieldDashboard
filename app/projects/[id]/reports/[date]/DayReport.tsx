@@ -44,12 +44,13 @@ function typeIcon(typeKey: string) {
   return typeKey.includes('diary') ? 'edit_note' : 'location_on'
 }
 
-function SectionLabel({ num, title }: { num: string; title: string }) {
+function SectionLabel({ num, title, action }: { num: string; title: string; action?: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3 mb-5">
       <span className="text-[10px] font-bold text-on-surface-variant font-mono tracking-widest opacity-50">{num}</span>
       <h2 className="text-sm font-bold text-on-surface tracking-tight">{title}</h2>
       <div className="flex-1 h-px bg-outline-variant/50" />
+      {action}
     </div>
   )
 }
@@ -287,12 +288,22 @@ export default function DayReport({
 
       {/* ── 02. 주요 발견 ── */}
       <section className="mb-10">
-        <SectionLabel num="02" title="주요 발견" />
+        <SectionLabel num="02" title="주요 발견" action={
+          <button
+            onClick={() => setShowCombinedImport(v => !v)}
+            className="print:hidden shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
+          >
+            <span className="material-symbols-outlined text-[13px]">
+              {showCombinedImport ? 'close' : (hasFindings ? 'edit' : 'add')}
+            </span>
+            {showCombinedImport ? '닫기' : (hasFindings ? '수정' : '입력')}
+          </button>
+        } />
 
         {hasFindings && (
           <div className="space-y-3 mb-2">
             {findings.map(f => (
-              <div key={f.id} className="flex gap-4 py-3 border-b border-outline-variant/40 last:border-0">
+              <div key={f.id} className="print-block flex gap-4 py-3 border-b border-outline-variant/40 last:border-0">
                 <span className={`text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border h-fit mt-0.5 shrink-0 ${FINDING_CHIP[f.type] ?? FINDING_CHIP.observation}`}>
                   {FINDING_TYPE_LABEL[f.type] ?? f.type}
                 </span>
@@ -303,7 +314,7 @@ export default function DayReport({
               </div>
             ))}
             {(summary?.key_patterns ?? []).map((p, i) => (
-              <div key={i} className="flex gap-4 py-3 border-b border-outline-variant/40 last:border-0">
+              <div key={i} className="print-block flex gap-4 py-3 border-b border-outline-variant/40 last:border-0">
                 <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border h-fit mt-0.5 shrink-0 bg-surface-container-high text-on-surface-variant border-outline-variant">
                   패턴
                 </span>
@@ -332,36 +343,29 @@ export default function DayReport({
           </div>
         )}
 
-        {/* 발견/요약 통합 입력 (웹 전용) */}
-        <div className="print:hidden">
-          <InputToggleBtn
-            open={showCombinedImport}
-            onClick={() => setShowCombinedImport(v => !v)}
-            label={hasFindings ? '발견/요약 수정' : '발견/요약 입력'}
-          />
-          {showCombinedImport && (
-            <div className="mt-2 space-y-2 bg-surface-container rounded-xl p-3 border border-outline-variant">
-              <p className="text-[10px] text-on-surface-variant font-mono">
-                {'{ "summary": { "scope", "key_patterns": [], "next_focus" }, "findings": [{ "type", "title", "description" }] }'}
-              </p>
-              <textarea
-                value={combinedJson}
-                onChange={e => setCombinedJson(e.target.value)}
-                rows={8}
-                placeholder={'{\n  "summary": {\n    "scope": "유저 다이어리 Day 1",\n    "key_patterns": ["패턴 1"],\n    "next_focus": "다음 확인사항"\n  },\n  "findings": [\n    { "type": "insight", "title": "제목", "description": "설명" }\n  ]\n}'}
-                className="w-full border border-outline-variant bg-surface rounded-lg px-3 py-2 text-[11px] font-mono focus:outline-none focus:border-primary/50 resize-none text-on-surface"
-              />
-              {combinedError && <p className="text-[10px] text-rose-600">{combinedError}</p>}
-              <button
-                onClick={handleCombinedImport}
-                disabled={savingCombined || !combinedJson.trim()}
-                className="px-4 py-1.5 bg-primary text-on-primary text-[11px] font-semibold rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity"
-              >
-                {savingCombined ? '저장 중...' : '저장'}
-              </button>
-            </div>
-          )}
-        </div>
+        {/* 발견/요약 폼 (헤더 버튼 토글) */}
+        {showCombinedImport && (
+          <div className="print:hidden mt-3 space-y-2 bg-surface-container rounded-xl p-3 border border-outline-variant">
+            <p className="text-[10px] text-on-surface-variant font-mono">
+              {'{ "summary": { "scope", "key_patterns": [], "next_focus" }, "findings": [{ "type", "title", "description" }] }'}
+            </p>
+            <textarea
+              value={combinedJson}
+              onChange={e => setCombinedJson(e.target.value)}
+              rows={8}
+              placeholder={'{\n  "summary": {\n    "scope": "유저 다이어리 Day 1",\n    "key_patterns": ["패턴 1"],\n    "next_focus": "다음 확인사항"\n  },\n  "findings": [\n    { "type": "insight", "title": "제목", "description": "설명" }\n  ]\n}'}
+              className="w-full border border-outline-variant bg-surface rounded-lg px-3 py-2 text-[11px] font-mono focus:outline-none focus:border-primary/50 resize-none text-on-surface"
+            />
+            {combinedError && <p className="text-[10px] text-rose-600">{combinedError}</p>}
+            <button
+              onClick={handleCombinedImport}
+              disabled={savingCombined || !combinedJson.trim()}
+              className="px-4 py-1.5 bg-primary text-on-primary text-[11px] font-semibold rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              {savingCombined ? '저장 중...' : '저장'}
+            </button>
+          </div>
+        )}
       </section>
 
       {/* ── 03. 다이어리 엔트리 (diary 활동이 있을 때) ── */}
@@ -393,7 +397,7 @@ export default function DayReport({
               const hasContent = entries.length > 0 || images.length > 0
 
               return (
-                <div key={a.id} className="pb-8 border-b border-outline-variant/40 last:border-0">
+                <div key={a.id} className="print-block pb-8 border-b border-outline-variant/40 last:border-0">
                   {/* 참여자 헤더 */}
                   <div className="flex items-center justify-between mb-4">
                     <Link
@@ -416,24 +420,35 @@ export default function DayReport({
                       </div>
                     </Link>
 
-                    {/* 이미지 업로드 버튼 (웹 전용) */}
-                    <label className="print:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant bg-surface text-[11px] text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer">
-                      <span className="material-symbols-outlined text-[14px]">
-                        {uploadingId === a.id ? 'hourglass_empty' : 'add_photo_alternate'}
-                      </span>
-                      {uploadingId === a.id ? '업로드 중...' : '이미지 추가'}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        disabled={uploadingId === a.id}
-                        onChange={e => {
-                          const file = e.target.files?.[0]
-                          if (file) handleImageUpload(a.id, file)
-                          e.target.value = ''
-                        }}
-                      />
-                    </label>
+                    {/* 우측 액션 버튼 그룹 */}
+                    <div className="print:hidden flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => setImportingId(importingId === a.id ? null : a.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[13px]">
+                          {importingId === a.id ? 'close' : (hasContent ? 'edit' : 'add')}
+                        </span>
+                        {importingId === a.id ? '닫기' : (hasContent ? '수정' : '결과 입력')}
+                      </button>
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors cursor-pointer">
+                        <span className="material-symbols-outlined text-[13px]">
+                          {uploadingId === a.id ? 'hourglass_empty' : 'add_photo_alternate'}
+                        </span>
+                        {uploadingId === a.id ? '중...' : '이미지'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploadingId === a.id}
+                          onChange={e => {
+                            const file = e.target.files?.[0]
+                            if (file) handleImageUpload(a.id, file)
+                            e.target.value = ''
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
 
                   {/* 텍스트 엔트리 */}
@@ -483,33 +498,26 @@ export default function DayReport({
                     <p className="text-sm text-on-surface-variant opacity-40">데이터 없음</p>
                   )}
 
-                  {/* JSON 데이터 입력 (웹 전용) */}
-                  <div className="print:hidden mt-3">
-                    <InputToggleBtn
-                      open={importingId === a.id}
-                      onClick={() => setImportingId(importingId === a.id ? null : a.id)}
-                      label="결과 입력"
-                    />
-                    {importingId === a.id && (
-                      <div className="mt-2 space-y-2 bg-surface-container rounded-xl p-3 border border-outline-variant">
-                        <textarea
-                          value={importJson[a.id] ?? ''}
-                          onChange={e => setImportJson(p => ({ ...p, [a.id]: e.target.value }))}
-                          rows={10}
-                          placeholder={`{\n  "activity": {\n    "participant_id": "${a.participant_id}",\n    "type_key": "${a.type_key}",\n    "date": "${date}",\n    "status": "submitted",\n    "content": {\n      "entries": [\n        { "time": "09:30", "text": "기록 내용", "tags": ["태그"] }\n      ]\n    }\n  },\n  "quotes": []\n}`}
-                          className="w-full border border-outline-variant bg-surface rounded-lg px-3 py-2 text-[11px] font-mono focus:outline-none focus:border-primary/50 resize-none text-on-surface"
-                        />
-                        {importError[a.id] && <p className="text-[10px] text-rose-600">{importError[a.id]}</p>}
-                        <button
-                          onClick={() => handleActivityImport(a.id)}
-                          disabled={importSaving[a.id] || !importJson[a.id]?.trim()}
-                          className="px-4 py-1.5 bg-primary text-on-primary text-[11px] font-semibold rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity"
-                        >
-                          {importSaving[a.id] ? '저장 중...' : '저장'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  {/* 결과 입력 폼 (헤더 버튼 토글) */}
+                  {importingId === a.id && (
+                    <div className="print:hidden mt-3 space-y-2 bg-surface-container rounded-xl p-3 border border-outline-variant">
+                      <textarea
+                        value={importJson[a.id] ?? ''}
+                        onChange={e => setImportJson(p => ({ ...p, [a.id]: e.target.value }))}
+                        rows={10}
+                        placeholder={`{\n  "activity": {\n    "participant_id": "${a.participant_id}",\n    "type_key": "${a.type_key}",\n    "date": "${date}",\n    "status": "submitted",\n    "content": {\n      "entries": [\n        { "time": "09:30", "text": "기록 내용", "tags": ["태그"] }\n      ]\n    }\n  },\n  "quotes": []\n}`}
+                        className="w-full border border-outline-variant bg-surface rounded-lg px-3 py-2 text-[11px] font-mono focus:outline-none focus:border-primary/50 resize-none text-on-surface"
+                      />
+                      {importError[a.id] && <p className="text-[10px] text-rose-600">{importError[a.id]}</p>}
+                      <button
+                        onClick={() => handleActivityImport(a.id)}
+                        disabled={importSaving[a.id] || !importJson[a.id]?.trim()}
+                        className="px-4 py-1.5 bg-primary text-on-primary text-[11px] font-semibold rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity"
+                      >
+                        {importSaving[a.id] ? '저장 중...' : '저장'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -526,20 +534,22 @@ export default function DayReport({
               const p = participantMap[a.participant_id]
               const qs = quotesByActivity[a.id] ?? []
               return (
-                <div key={a.id}>
-                  <Link
-                    href={`/projects/${projectId}/participants/${a.participant_id}`}
-                    className="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/60 group"
-                  >
+                <div key={a.id} className="print-block">
+                  {/* 참여자 헤더: 좌측 = 인물 정보(인라인 링크), 우측 = 결과 입력 버튼 */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/60">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center shrink-0">
                         <span className="text-[10px] font-bold text-on-primary-container font-mono">{a.participant_id}</span>
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Link
+                            href={`/projects/${projectId}/participants/${a.participant_id}`}
+                            className="text-sm font-semibold text-primary hover:underline flex items-center gap-0.5"
+                          >
                             {p?.name ?? a.participant_id}
-                          </span>
+                            <span className="material-symbols-outlined text-[13px]">arrow_forward</span>
+                          </Link>
                           <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full border ${STATUS_CHIP[a.status] ?? STATUS_CHIP.scheduled}`}>
                             {STATUS_LABEL[a.status]}
                           </span>
@@ -551,11 +561,16 @@ export default function DayReport({
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 text-[11px] text-on-surface-variant group-hover:text-on-surface transition-colors">
-                      <span>참여자별 상세</span>
-                      <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                    </div>
-                  </Link>
+                    <button
+                      onClick={() => setImportingId(importingId === a.id ? null : a.id)}
+                      className="print:hidden shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[13px]">
+                        {importingId === a.id ? 'close' : (qs.length > 0 ? 'edit' : 'add')}
+                      </span>
+                      {importingId === a.id ? '닫기' : (qs.length > 0 ? '수정' : '결과 입력')}
+                    </button>
+                  </div>
 
                   <div className="pl-11">
                     {qs.length > 0 ? (
@@ -573,11 +588,6 @@ export default function DayReport({
                     )}
 
                     <div className="print:hidden">
-                      <InputToggleBtn
-                        open={importingId === a.id}
-                        onClick={() => setImportingId(importingId === a.id ? null : a.id)}
-                        label="결과 입력"
-                      />
                       {importingId === a.id && (
                         <div className="mt-2 space-y-2 bg-surface-container rounded-xl p-3 border border-outline-variant">
                           <textarea

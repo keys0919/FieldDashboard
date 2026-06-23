@@ -118,7 +118,7 @@ body {
   /* 색상 강제 유지 */
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-  /* 섹션 페이지 분리 방지 */
-  section { break-inside: avoid; }
+  /* 개별 블록 단위 페이지 분리 방지 (section 전체에 걸면 긴 섹션이 1페이지에서 잘림) */
   blockquote { break-inside: avoid; }
+  .print-block { break-inside: avoid; }
 }

@@ -45,9 +45,9 @@ export default async function ProjectLayout({
       </header>
 
       {/* Body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-h-0">
         <ProjectSidebar projectId={id} />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-surface pb-16 lg:pb-0 flex flex-col">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-surface pb-16 lg:pb-0 flex flex-col min-h-0">
           {children}
         </main>
       </div>

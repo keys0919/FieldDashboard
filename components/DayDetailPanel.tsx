@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 
 export interface Participant {
   id: string
@@ -58,6 +59,8 @@ const isDone = (status: string) => status === 'submitted' || status === 'complet
 export default function DayDetailPanel({
   date, activities, participantMap, activityTypeLabels, projectId, onClose,
 }: Props) {
+  const [showProfilePopup, setShowProfilePopup] = useState(false)
+
   type Group = { type_key: string; diary_day: number | null; items: ActivityItem[] }
 
   const groups: Group[] = Object.values(
@@ -162,12 +165,77 @@ export default function DayDetailPanel({
                   리포트 보기
                 </Link>
               ) : (
-                <p className="text-center text-[12px] text-on-surface-variant py-2">진행 예정</p>
+                <button
+                  onClick={() => setShowProfilePopup(true)}
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-on-surface text-surface text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+                >
+                  <span className="material-symbols-outlined text-[18px]">group</span>
+                  프로필 보기
+                </button>
               )}
             </div>
           )}
         </div>
       </div>
+      {showProfilePopup && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-50"
+            onClick={() => setShowProfilePopup(false)}
+          />
+          <div className="fixed z-50 inset-6 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[520px] md:max-h-[calc(100vh-80px)] bg-white rounded-2xl shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant shrink-0">
+              <div>
+                <p className="text-base font-bold text-on-surface">{formatDate(date)} 참여자</p>
+                <p className="text-xs text-on-surface-variant mt-0.5">{activities.length}명</p>
+              </div>
+              <button
+                onClick={() => setShowProfilePopup(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors"
+              >
+                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">close</span>
+              </button>
+            </div>
+            <div className="overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-surface-container-lowest">
+                  <tr className="text-[11px] text-on-surface-variant font-semibold uppercase tracking-wide">
+                    <th className="text-left px-6 py-3">이름</th>
+                    <th className="text-left px-4 py-3">나이</th>
+                    <th className="text-left px-4 py-3">성별</th>
+                    <th className="text-left px-4 py-3">그룹</th>
+                    <th className="text-left px-4 py-3">시간</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant/40">
+                  {[...activities]
+                    .sort((a, b) => (a.start_time ?? '').localeCompare(b.start_time ?? ''))
+                    .map(a => {
+                      const p = participantMap[a.participant_id]
+                      return (
+                        <tr key={a.id} className="hover:bg-surface-container-lowest transition-colors">
+                          <td className="px-6 py-3.5 font-medium text-on-surface">
+                            <Link
+                              href={`/projects/${projectId}/participants/${a.participant_id}`}
+                              onClick={() => { setShowProfilePopup(false); onClose() }}
+                              className="hover:text-primary transition-colors"
+                            >
+                              {p?.name ?? a.participant_id}
+                            </Link>
+                          </td>
+                          <td className="px-4 py-3.5 text-on-surface-variant">{p?.age ? `${p.age}세` : '-'}</td>
+                          <td className="px-4 py-3.5 text-on-surface-variant">{p?.gender ?? '-'}</td>
+                          <td className="px-4 py-3.5 text-on-surface-variant">{p?.group ?? '-'}</td>
+                          <td className="px-4 py-3.5 font-mono text-[11px] text-outline">{a.start_time ? a.start_time.slice(0, 5) : '-'}</td>
+                        </tr>
+                      )
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
     </>
   )
 }

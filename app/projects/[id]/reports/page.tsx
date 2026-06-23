@@ -152,8 +152,8 @@ export default async function ReportsPage({ params }: { params: Promise<{ id: st
 
                 <div className="flex items-center gap-2 shrink-0">
                   {hasSummary && (
-                    <span className="text-[10px] font-bold text-sky-700 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full">
-                      Summary
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+                      완료
                     </span>
                   )}
                   <span className="material-symbols-outlined text-[16px] text-on-surface-variant group-hover:text-on-surface transition-colors">
