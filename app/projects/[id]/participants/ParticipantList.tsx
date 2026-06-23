@@ -92,7 +92,7 @@ export default function ParticipantList({ projectId, participants, actCount }: P
   return (
     <div>
       {/* Sticky 헤더: 타이틀 + 정렬 + 컬럼 헤더 */}
-      <div className="sticky top-14 z-10 bg-surface border-b border-outline-variant/60">
+      <div className="sticky top-14 z-10 bg-surface">
         {/* 타이틀 행 */}
         <div className="flex items-center justify-between px-6 pt-5 pb-3">
           <h1 className="text-xl font-bold text-on-surface tracking-tight">참여자</h1>
@@ -168,8 +168,9 @@ export default function ParticipantList({ projectId, participants, actCount }: P
           </div>
         </div>
 
-        {/* 컬럼 헤더 */}
-        <div className={`grid ${COL} gap-x-4 px-6 py-2.5 bg-surface-container-low border-t border-outline-variant/40`}>
+        {/* 컬럼 헤더 — data container와 동일한 px-6 중첩으로 정렬 일치 */}
+        <div className="px-6 pb-2">
+        <div className={`grid ${COL} gap-x-4 px-6 py-2.5 bg-surface-container-low rounded-t-xl`}>
           {[
             { label: 'ID' },
             { label: '이름' },
@@ -187,11 +188,12 @@ export default function ParticipantList({ projectId, participants, actCount }: P
             </span>
           ))}
         </div>
+        </div>
       </div>
 
       {/* 데이터 행 */}
-      <div className="px-6 py-4">
-        <div className="glass-card rounded-xl overflow-hidden">
+      <div className="px-6 pb-4">
+        <div className="glass-card rounded-b-xl overflow-hidden">
           {sorted.map((p, i) => {
             const cnt = actCount[p.id] ?? { total: 0, done: 0 }
             return (
