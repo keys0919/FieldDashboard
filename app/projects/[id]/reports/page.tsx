@@ -150,7 +150,7 @@ export default async function ReportsPage({ params }: { params: Promise<{ id: st
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-outline">{acts.length}개</span>
+                  <span className="text-xs text-outline">{acts.length}명</span>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
