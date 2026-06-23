@@ -47,7 +47,7 @@ export default async function ProjectLayout({
       {/* Body */}
       <div className="flex pt-14">
         <ProjectSidebar projectId={id} />
-        <main className="flex-1 overflow-x-hidden bg-surface pb-16 lg:pb-0 flex flex-col lg:pl-64 min-h-[calc(100vh-3.5rem)]">
+        <main className="flex-1 bg-surface pb-16 lg:pb-0 flex flex-col lg:pl-64 min-h-[calc(100vh-3.5rem)] [overflow-x:clip]">
           {children}
         </main>
       </div>

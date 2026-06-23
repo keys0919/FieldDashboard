@@ -190,7 +190,7 @@ export default function ParticipantList({ projectId, participants, actCount }: P
       </div>
 
       {/* 데이터 행 */}
-      <div className="px-6 py-4 max-w-3xl">
+      <div className="px-6 py-4">
         <div className="glass-card rounded-xl overflow-hidden">
           {sorted.map((p, i) => {
             const cnt = actCount[p.id] ?? { total: 0, done: 0 }
@@ -198,7 +198,7 @@ export default function ParticipantList({ projectId, participants, actCount }: P
               <Link
                 key={p.id}
                 href={`/projects/${projectId}/participants/${p.id}`}
-                className={`grid ${COL} gap-x-4 items-center px-5 py-3 hover:bg-surface-container-low transition-colors group ${
+                className={`grid ${COL} gap-x-4 items-center px-6 py-3 hover:bg-surface-container-low transition-colors group ${
                   i > 0 ? 'border-t border-outline-variant/40' : ''
                 }`}
               >
