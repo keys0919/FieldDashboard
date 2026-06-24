@@ -22,9 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const scalarFields = [
     'schedule_comment_prev',
     'schedule_comment_curr',
-    'minutes_date',
-    'minutes_attendees',
-    'minutes_content',
+    'minutes',
   ] as const
   for (const field of scalarFields) {
     if (field in body) meetingUpdates[field] = body[field] ?? null

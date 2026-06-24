@@ -21,15 +21,25 @@ interface MeetingItemRow {
   close_reason: string | null
 }
 
+interface MinutesDiscussion { item: string; notes: string }
+interface MinutesNextStep { action: string; owner?: string; due?: string }
+interface MinutesData {
+  date?: string
+  attendees?: string[]
+  topic?: string
+  discussions?: MinutesDiscussion[]
+  decisions?: string[]
+  open_items?: string[]
+  next_steps?: MinutesNextStep[]
+}
+
 interface Meeting {
   id: string
   week_start: string
   week_end: string
   schedule_comment_prev: string | null
   schedule_comment_curr: string | null
-  minutes_date: string | null
-  minutes_attendees: string | null
-  minutes_content: string | null
+  minutes: MinutesData | null
 }
 
 interface Props {
@@ -212,10 +222,10 @@ export default function MeetingDetail({
   const [importError, setImportError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
-  // 회의록 탭 — 직접 편집
-  const [minutesDate, setMinutesDate] = useState(meeting.minutes_date ?? '')
-  const [minutesAttendees, setMinutesAttendees] = useState(meeting.minutes_attendees ?? '')
-  const [minutesContent, setMinutesContent] = useState(meeting.minutes_content ?? '')
+  // 회의록 탭 — JSON import
+  const [minutes, setMinutes] = useState<MinutesData | null>(meeting.minutes ?? null)
+  const [showMinutesEdit, setShowMinutesEdit] = useState(false)
+  const [minutesJson, setMinutesJson] = useState('')
   const [minutesSaving, setMinutesSaving] = useState(false)
   const [minutesError, setMinutesError] = useState<string | null>(null)
   const [minutesSaved, setMinutesSaved] = useState(false)
@@ -224,7 +234,7 @@ export default function MeetingDetail({
   const openQuestions  = items.filter(i => i.type === 'open_question')
   const decisions      = items.filter(i => i.type === 'decision')
 
-  const hasMinutes = !!(meeting.minutes_content || meeting.minutes_date || meeting.minutes_attendees)
+  const hasMinutes = !!(minutes && Object.keys(minutes).length > 0)
 
   async function handleImport() {
     setImportError(null)
@@ -252,18 +262,23 @@ export default function MeetingDetail({
     setMinutesError(null)
     setMinutesSaved(false)
     setMinutesSaving(true)
+    let parsed: MinutesData
+    try { parsed = JSON.parse(minutesJson) } catch {
+      setMinutesError('JSON 형식이 올바르지 않습니다')
+      setMinutesSaving(false)
+      return
+    }
     const res = await fetch(`/api/projects/${projectId}/meetings/${meeting.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        minutes_date: minutesDate || null,
-        minutes_attendees: minutesAttendees || null,
-        minutes_content: minutesContent || null,
-      }),
+      body: JSON.stringify({ minutes: parsed }),
     })
     const data = await res.json()
     setMinutesSaving(false)
     if (!res.ok) { setMinutesError(data.error ?? '오류가 발생했습니다'); return }
+    setMinutes(parsed)
+    setShowMinutesEdit(false)
+    setMinutesJson('')
     setMinutesSaved(true)
     setTimeout(() => setMinutesSaved(false), 2000)
     router.refresh()
@@ -448,86 +463,197 @@ export default function MeetingDetail({
         <TrackingSection num="04" title="의사결정"   items={decisions}     seqMap={seqMap} showId={showImport} />
       </div>
 
-      {/* ── 회의록 탭 ──
-           화면: minutes 탭일 때만 보임
-           print: minutes 데이터가 있을 때만 보임  */}
+      {/* ── 회의록 탭 ── */}
       <div className={activeTab === 'minutes' ? '' : hasMinutes ? 'hidden print:block' : 'hidden'}>
 
-        {/* print용 섹션 구분 */}
+        {/* print 섹션 구분 */}
         <div className="hidden print:flex items-center gap-2 mb-6 pb-4 border-t border-outline-variant pt-8 mt-8">
           <h2 className="text-base font-bold text-on-surface">회의록</h2>
         </div>
 
-        <div className="space-y-5">
-
-          {/* 회의 일자 + 참석자 */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                회의 일자
-              </label>
-              <input
-                type="date"
-                value={minutesDate}
-                onChange={e => setMinutesDate(e.target.value)}
-                className={`${isClientView ? 'hidden' : 'print:hidden'} w-full border border-outline-variant bg-surface rounded-lg px-3 py-2 text-sm font-mono text-on-surface focus:outline-none focus:border-primary/50`}
-              />
-              <p className={`${isClientView ? '' : 'hidden print:block'} text-sm text-on-surface font-mono`}>{minutesDate || '—'}</p>
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                참석자
-              </label>
-              <input
-                type="text"
-                value={minutesAttendees}
-                onChange={e => setMinutesAttendees(e.target.value)}
-                placeholder="홍길동, 김리서처, 이매니저"
-                className={`${isClientView ? 'hidden' : 'print:hidden'} w-full border border-outline-variant bg-surface rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary/50`}
-              />
-              <p className={`${isClientView ? '' : 'hidden print:block'} text-sm text-on-surface`}>{minutesAttendees || '—'}</p>
-            </div>
+        {/* 편집 버튼 */}
+        {!isClientView && (
+          <div className="print:hidden mb-6 flex items-center justify-end gap-3">
+            {minutesSaved && (
+              <span className="text-[11px] text-emerald-600 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                저장됨
+              </span>
+            )}
+            <button
+              onClick={() => {
+                if (!showMinutesEdit && minutes) setMinutesJson(JSON.stringify(minutes, null, 2))
+                setShowMinutesEdit(v => !v)
+                setMinutesError(null)
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
+            >
+              <span className="material-symbols-outlined text-[13px]">{showMinutesEdit ? 'close' : hasMinutes ? 'edit' : 'add'}</span>
+              {showMinutesEdit ? '닫기' : hasMinutes ? '수정' : '입력'}
+            </button>
           </div>
+        )}
 
-          {/* 회의록 본문 */}
-          <div>
-            <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-              회의록
-            </label>
+        {/* JSON 입력 폼 */}
+        {showMinutesEdit && !isClientView && (
+          <div className="print:hidden mb-6 space-y-2 bg-surface-container rounded-xl p-3 border border-outline-variant">
+            <p className="text-[10px] text-on-surface-variant font-mono leading-relaxed">
+              date: 회의 날짜 (YYYY-MM-DD) · attendees: 참석자 배열 · topic: 주제<br/>
+              discussions: 논의사항 [{'{item, notes}'}] · decisions: 확정사항 [] · open_items: 미결 []<br/>
+              next_steps: 향후 계획 [{'{action, owner?, due?}'}]
+            </p>
             <textarea
-              value={minutesContent}
-              onChange={e => setMinutesContent(e.target.value)}
-              rows={20}
-              placeholder={'회의 내용을 자유롭게 입력하세요.\n전사 내용을 그대로 붙여넣거나 요약해서 작성할 수 있습니다.'}
-              className={`${isClientView ? 'hidden' : 'print:hidden'} w-full border border-outline-variant bg-surface rounded-xl px-4 py-3 text-sm text-on-surface leading-relaxed focus:outline-none focus:border-primary/50 resize-y`}
+              value={minutesJson}
+              onChange={e => setMinutesJson(e.target.value)}
+              rows={16}
+              placeholder={`{\n  "date": "YYYY-MM-DD",\n  "attendees": ["홍길동 (PM)", "김리서처 (Researcher)"],\n  "topic": "차수 정례회의 — 주제",\n  "discussions": [\n    { "item": "논의 항목", "notes": "상세 내용" }\n  ],\n  "decisions": ["확정 사항"],\n  "open_items": ["미결 항목"],\n  "next_steps": [\n    { "action": "액션", "owner": "담당자", "due": "YYYY-MM-DD" }\n  ]\n}`}
+              className="w-full border border-outline-variant bg-surface rounded-lg px-3 py-2 text-[11px] font-mono focus:outline-none focus:border-primary/50 resize-none text-on-surface"
             />
-            <div className={`${isClientView ? '' : 'hidden print:block'} bg-surface-container/30 rounded-xl px-4 py-4 border border-outline-variant/40`}>
-              <p className="text-sm text-on-surface leading-relaxed whitespace-pre-wrap">{minutesContent || '—'}</p>
-            </div>
+            {minutesError && <p className="text-[10px] text-rose-600">{minutesError}</p>}
+            <button
+              onClick={handleMinutesSave}
+              disabled={minutesSaving || !minutesJson.trim()}
+              className="px-4 py-1.5 bg-primary text-on-primary text-[11px] font-semibold rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              {minutesSaving ? '저장 중...' : '저장'}
+            </button>
           </div>
+        )}
 
-          {/* 저장 버튼 */}
-          {!isClientView && (
-            <div className="print:hidden flex items-center gap-3">
-              <button
-                onClick={handleMinutesSave}
-                disabled={minutesSaving}
-                className="px-5 py-2 bg-primary text-on-primary text-[11px] font-semibold rounded-full hover:opacity-90 disabled:opacity-50 transition-opacity"
-              >
-                {minutesSaving ? '저장 중...' : '저장'}
-              </button>
-              {minutesSaved && (
-                <span className="text-[11px] text-emerald-600 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                  저장됨
-                </span>
-              )}
-              {minutesError && <span className="text-[11px] text-rose-600">{minutesError}</span>}
-            </div>
-          )}
-        </div>
+        {/* 구조화 표시 */}
+        {minutes && <MinutesDisplay minutes={minutes} />}
+
+        {!minutes && !showMinutesEdit && !isClientView && (
+          <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant">
+            <span className="material-symbols-outlined text-[36px] opacity-20 mb-3">description</span>
+            <p className="text-sm font-medium">회의록이 없습니다</p>
+            <p className="text-xs opacity-60 mt-1">위 버튼으로 회의록을 입력하세요</p>
+          </div>
+        )}
+
+        {!minutes && !showMinutesEdit && isClientView && (
+          <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant">
+            <span className="material-symbols-outlined text-[36px] opacity-20 mb-3">description</span>
+            <p className="text-sm font-medium">회의록이 없습니다</p>
+          </div>
+        )}
       </div>
 
+    </div>
+  )
+}
+
+function MinutesDisplay({ minutes }: { minutes: { date?: string; attendees?: string[]; topic?: string; discussions?: { item: string; notes: string }[]; decisions?: string[]; open_items?: string[]; next_steps?: { action: string; owner?: string; due?: string }[] } }) {
+  const fmtDue = (d: string) => {
+    const [, m, day] = d.split('-')
+    return `${Number(m)}/${Number(day)}`
+  }
+
+  return (
+    <div className="space-y-6">
+
+      {/* 헤더: 날짜 + 참석자 */}
+      <div className="flex flex-wrap items-start gap-4 pb-5 border-b border-outline-variant/40">
+        {minutes.date && (
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px] text-on-surface-variant">calendar_today</span>
+            <span className="text-sm font-mono font-semibold text-on-surface">{minutes.date}</span>
+          </div>
+        )}
+        {minutes.attendees && minutes.attendees.length > 0 && (
+          <div className="flex items-start gap-2">
+            <span className="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">group</span>
+            <div className="flex flex-wrap gap-1.5">
+              {minutes.attendees.map((a, i) => (
+                <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant">{a}</span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 주제 */}
+      {minutes.topic && (
+        <div>
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1.5">주제</p>
+          <p className="text-sm font-semibold text-on-surface">{minutes.topic}</p>
+        </div>
+      )}
+
+      {/* 주요 논의사항 */}
+      {minutes.discussions && minutes.discussions.length > 0 && (
+        <div>
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">주요 논의사항</p>
+          <ol className="space-y-3">
+            {minutes.discussions.map((d, i) => (
+              <li key={i} className="flex gap-3">
+                <span className="text-[10px] font-mono font-bold text-on-surface-variant opacity-40 shrink-0 pt-0.5 w-5">{i + 1}</span>
+                <div>
+                  <p className="text-sm font-semibold text-on-surface">{d.item}</p>
+                  {d.notes && <p className="text-xs text-on-surface-variant mt-0.5 leading-relaxed">{d.notes}</p>}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {/* 확정 사항 */}
+      {minutes.decisions && minutes.decisions.length > 0 && (
+        <div>
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">확정 사항</p>
+          <ul className="space-y-2">
+            {minutes.decisions.map((d, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <span className="material-symbols-outlined text-[14px] text-emerald-600 shrink-0 mt-0.5">check_circle</span>
+                <span className="text-sm text-on-surface">{d}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* 미결 */}
+      {minutes.open_items && minutes.open_items.length > 0 && (
+        <div>
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">미결</p>
+          <ul className="space-y-2">
+            {minutes.open_items.map((o, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <span className="material-symbols-outlined text-[14px] text-amber-500 shrink-0 mt-0.5">pending</span>
+                <span className="text-sm text-on-surface">{o}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* 향후 계획 */}
+      {minutes.next_steps && minutes.next_steps.length > 0 && (
+        <div>
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">향후 계획</p>
+          <div className="rounded-xl border border-outline-variant overflow-hidden">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-surface-container border-b border-outline-variant">
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">액션</th>
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-wide w-24">담당</th>
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-wide w-16">기한</th>
+                </tr>
+              </thead>
+              <tbody>
+                {minutes.next_steps.map((s, i) => (
+                  <tr key={i} className={i > 0 ? 'border-t border-outline-variant/40' : ''}>
+                    <td className="px-4 py-2.5 text-sm text-on-surface">{s.action}</td>
+                    <td className="px-4 py-2.5 text-xs text-on-surface-variant">{s.owner ?? '—'}</td>
+                    <td className="px-4 py-2.5 font-mono text-xs text-on-surface-variant">{s.due ? fmtDue(s.due) : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

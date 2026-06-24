@@ -101,6 +101,27 @@ export interface MeetingItem {
   updated_at: string
 }
 
+export interface MinutesDiscussion {
+  item: string
+  notes: string
+}
+
+export interface MinutesNextStep {
+  action: string
+  owner?: string
+  due?: string
+}
+
+export interface MinutesData {
+  date?: string
+  attendees?: string[]
+  topic?: string
+  discussions?: MinutesDiscussion[]
+  decisions?: string[]
+  open_items?: string[]
+  next_steps?: MinutesNextStep[]
+}
+
 export interface Meeting {
   id: string
   project_id: string
@@ -108,9 +129,7 @@ export interface Meeting {
   week_end: string
   schedule_comment_prev: string | null
   schedule_comment_curr: string | null
-  minutes_date: string | null
-  minutes_attendees: string | null
-  minutes_content: string | null
+  minutes: MinutesData | null
   created_at: string
   updated_at: string
 }
