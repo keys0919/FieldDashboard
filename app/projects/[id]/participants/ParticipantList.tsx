@@ -94,7 +94,8 @@ export default function ParticipantList({ projectId, participants, actCount }: P
       {/* Sticky 헤더: 타이틀 + 정렬 + 컬럼 헤더 */}
       <div className="sticky top-14 z-10 bg-surface">
         {/* 타이틀 행 */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-3">
+        <div className="px-6 pt-5 pb-3">
+        <div className="max-w-3xl flex items-center justify-between">
           <h1 className="text-xl font-bold text-on-surface tracking-tight">참여자</h1>
           <div className="flex items-center gap-2">
             {/* 정렬 드롭다운 */}
@@ -166,6 +167,7 @@ export default function ParticipantList({ projectId, participants, actCount }: P
               추가
             </Link>
           </div>
+        </div>
         </div>
 
         {/* 컬럼 헤더 — data container와 동일한 px-6 + max-w-3xl로 정렬 일치 */}

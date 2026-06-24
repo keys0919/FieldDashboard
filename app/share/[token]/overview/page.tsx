@@ -1,62 +1,39 @@
 import { createServerClient } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import { ScreenerQuestion } from '@/types'
-import ShareTokenCard from './ShareTokenCard'
 
 const STATUS_LABEL: Record<string, string> = {
   active: '진행 중', completed: '완료', archived: '보관',
 }
 
-function SectionCard({ icon, title, children, action }: {
-  icon: string; title: string; children: React.ReactNode; action?: React.ReactNode
+function SectionCard({ icon, title, children }: {
+  icon: string; title: string; children: React.ReactNode
 }) {
   return (
     <div className="glass-card rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-3 bg-surface-container border-b border-outline-variant">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px] text-on-surface-variant">{icon}</span>
-          <h2 className="text-sm font-bold text-on-surface">{title}</h2>
-        </div>
-        {action}
+      <div className="flex items-center gap-2 px-5 py-3 bg-surface-container border-b border-outline-variant">
+        <span className="material-symbols-outlined text-[18px] text-on-surface-variant">{icon}</span>
+        <h2 className="text-sm font-bold text-on-surface">{title}</h2>
       </div>
       <div className="p-5">{children}</div>
     </div>
   )
 }
 
-export default async function OverviewPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function ShareOverviewPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params
   const sb = createServerClient()
 
-  const { data: project } = await sb
-    .from('projects')
-    .select('*')
-    .eq('id', id)
-    .single()
-
+  const { data: project } = await sb.from('projects').select('*').eq('share_token', token).single()
   if (!project) notFound()
 
   const schema: ScreenerQuestion[] = project.screener_schema ?? []
-  const shareToken: string = project.share_token ?? ''
-  const activityTypes: Array<{ key: string; label: string; content_schema?: Record<string, unknown> }> = project.activity_types ?? []
-  const documents: Array<{ label: string; url: string; type: string }> = project.documents ?? []
-  const resourceCount = documents.length
+  const activityTypes: Array<{ key: string; label: string }> = project.activity_types ?? []
 
   return (
     <div className="px-6 py-6 max-w-3xl space-y-4">
 
-      {/* 연구 개요 */}
-      <SectionCard
-        icon="info"
-        title="Overview"
-        action={
-          <Link href={`/projects/${id}/edit`} className="flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-on-surface transition-colors">
-            <span className="material-symbols-outlined text-[13px]">edit</span>
-            편집
-          </Link>
-        }
-      >
+      <SectionCard icon="info" title="Overview">
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
           {project.client && (
             <div>
@@ -85,34 +62,6 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
         </dl>
       </SectionCard>
 
-      {/* 고객 공유 */}
-      <SectionCard icon="share" title="고객 공유">
-        <p className="text-[11px] text-on-surface-variant mb-3">
-          아래 URL로 고객이 로그인 없이 프로젝트 진행 현황을 열람할 수 있습니다.
-          운영 메모·연구자 노트는 표시되지 않습니다.
-        </p>
-        <ShareTokenCard token={shareToken} />
-      </SectionCard>
-
-      {/* 자료실 링크 */}
-      <SectionCard
-        icon="folder_open"
-        title="자료실"
-        action={
-          <Link href={`/projects/${id}/resources`} className="flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-on-surface transition-colors">
-            <span className="text-[11px]">{resourceCount > 0 ? `${resourceCount}개` : '비어있음'}</span>
-            <span className="material-symbols-outlined text-[13px]">chevron_right</span>
-          </Link>
-        }
-      >
-        <p className="text-sm text-on-surface-variant">
-          {resourceCount > 0
-            ? `문서 ${resourceCount}개가 등록되어 있습니다.`
-            : '등록된 문서가 없습니다.'}
-        </p>
-      </SectionCard>
-
-      {/* 스크리너 질문지 */}
       {schema.length > 0 && (
         <SectionCard icon="assignment_ind" title="스크리너 질문지">
           <ol className="space-y-4">
@@ -125,8 +74,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
                     <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant">
                       {q.type === 'single_choice' ? '단일 선택'
                         : q.type === 'multi_choice' ? '복수 선택'
-                        : q.type === 'number' ? '숫자'
-                        : '텍스트'}
+                        : q.type === 'number' ? '숫자' : '텍스트'}
                     </span>
                     {q.id && <span className="text-[9px] font-mono text-outline">{q.id}</span>}
                   </div>
@@ -146,7 +94,6 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
         </SectionCard>
       )}
 
-      {/* Activity 유형 정의 */}
       {activityTypes.length > 0 && (
         <SectionCard icon="category" title="Activity 유형 정의">
           <div className="space-y-3">
@@ -164,7 +111,6 @@ export default async function OverviewPage({ params }: { params: Promise<{ id: s
           </div>
         </SectionCard>
       )}
-
     </div>
   )
 }

@@ -88,6 +88,33 @@ export interface Summary {
   updated_at: string
 }
 
+export interface MeetingItem {
+  id: string
+  project_id: string
+  meeting_id: string
+  type: 'issue' | 'open_question' | 'decision'
+  text: string
+  status: 'open' | 'resolved' | 'pending' | 'confirmed'
+  closed_meeting_id: string | null
+  close_reason: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Meeting {
+  id: string
+  project_id: string
+  week_start: string
+  week_end: string
+  schedule_comment_prev: string | null
+  schedule_comment_curr: string | null
+  minutes_date: string | null
+  minutes_attendees: string | null
+  minutes_content: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Finding {
   id: string
   project_id: string

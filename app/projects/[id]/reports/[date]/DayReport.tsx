@@ -72,12 +72,14 @@ interface Props {
   activities: Activity[]; quotesByActivity: Record<string, Quote[]>
   participantMap: Record<string, ParticipantRow>
   summary: Summary | null; findings: Finding[]; typeLabels: Record<string, string>
+  isClientView?: boolean
 }
 
 export default function DayReport({
   projectId, projectName, projectClient, date,
   activities, quotesByActivity, participantMap,
   summary: initialSummary, findings: initialFindings, typeLabels,
+  isClientView = false,
 }: Props) {
   const router = useRouter()
 
@@ -288,7 +290,7 @@ export default function DayReport({
 
       {/* ── 02. 주요 발견 ── */}
       <section className="mb-10">
-        <SectionLabel num="02" title="주요 발견" action={
+        <SectionLabel num="02" title="주요 발견" action={isClientView ? undefined :
           <button
             onClick={() => setShowCombinedImport(v => !v)}
             className="print:hidden shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
@@ -421,7 +423,7 @@ export default function DayReport({
                     </Link>
 
                     {/* 우측 액션 버튼 그룹 */}
-                    <div className="print:hidden flex items-center gap-2 shrink-0">
+                    <div className={`${isClientView ? 'hidden' : ''} print:hidden flex items-center gap-2 shrink-0`}>
                       <button
                         onClick={() => setImportingId(importingId === a.id ? null : a.id)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
@@ -561,15 +563,17 @@ export default function DayReport({
                         )}
                       </div>
                     </div>
-                    <button
-                      onClick={() => setImportingId(importingId === a.id ? null : a.id)}
-                      className="print:hidden shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[13px]">
-                        {importingId === a.id ? 'close' : (qs.length > 0 ? 'edit' : 'add')}
-                      </span>
-                      {importingId === a.id ? '닫기' : (qs.length > 0 ? '수정' : '결과 입력')}
-                    </button>
+                    {!isClientView && (
+                      <button
+                        onClick={() => setImportingId(importingId === a.id ? null : a.id)}
+                        className="print:hidden shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[13px]">
+                          {importingId === a.id ? 'close' : (qs.length > 0 ? 'edit' : 'add')}
+                        </span>
+                        {importingId === a.id ? '닫기' : (qs.length > 0 ? '수정' : '결과 입력')}
+                      </button>
+                    )}
                   </div>
 
                   <div className="pl-11">

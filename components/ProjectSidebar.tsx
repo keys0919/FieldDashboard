@@ -11,7 +11,9 @@ const NAV = [
   { label: '개요',         icon: 'info',             href: (id: string) => `/projects/${id}/overview` },
   { label: 'Calendar',     icon: 'calendar_today',   href: (id: string) => `/projects/${id}` },
   { label: 'Participants', icon: 'group',             href: (id: string) => `/projects/${id}/participants` },
-  { label: 'Reports',      icon: 'analytics',         href: (id: string) => `/projects/${id}/reports` },
+  { label: 'Reports',      icon: 'analytics',        href: (id: string) => `/projects/${id}/reports` },
+  { label: 'Meetings',     icon: 'groups',           href: (id: string) => `/projects/${id}/meetings` },
+  { label: '자료실',       icon: 'library_books',    href: (id: string) => `/projects/${id}/resources` },
 ]
 
 export default function ProjectSidebar({ projectId }: Props) {
