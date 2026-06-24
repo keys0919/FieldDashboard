@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import DayReport from '@/app/projects/[id]/reports/[date]/DayReport'
+import CommentsPanel from '@/components/CommentsPanel'
 
 export default async function ShareDayReportPage({
   params,
@@ -68,6 +69,12 @@ export default async function ShareDayReportPage({
         findings={findings ?? []}
         typeLabels={typeLabels}
         isClientView={true}
+      />
+      <CommentsPanel
+        apiBase={`/api/share/${token}/comments`}
+        objectType="report"
+        objectId={date}
+        authorType="client"
       />
     </div>
   )

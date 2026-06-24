@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import MeetingDetail from '@/app/projects/[id]/meetings/[mid]/MeetingDetail'
+import CommentsPanel from '@/components/CommentsPanel'
 
 export default async function ShareMeetingDetailPage({
   params,
@@ -88,6 +89,12 @@ export default async function ShareMeetingDetailPage({
         prevWeekStart={toISO(prevStart)}
         prevWeekEnd={toISO(prevEnd)}
         isClientView={true}
+      />
+      <CommentsPanel
+        apiBase={`/api/share/${token}/comments`}
+        objectType="meeting"
+        objectId={mid}
+        authorType="client"
       />
     </div>
   )

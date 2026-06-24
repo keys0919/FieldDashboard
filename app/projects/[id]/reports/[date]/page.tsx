@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import DayReport from './DayReport'
+import CommentsPanel from '@/components/CommentsPanel'
 
 export default async function DayReportPage({ params }: { params: Promise<{ id: string; date: string }> }) {
   const { id, date } = await params
@@ -61,6 +62,12 @@ export default async function DayReportPage({ params }: { params: Promise<{ id: 
         summary={summary}
         findings={findings ?? []}
         typeLabels={typeLabels}
+      />
+      <CommentsPanel
+        apiBase={`/api/projects/${id}/comments`}
+        objectType="report"
+        objectId={date}
+        authorType="researcher"
       />
     </div>
   )

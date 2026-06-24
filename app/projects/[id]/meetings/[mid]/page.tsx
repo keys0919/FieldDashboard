@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import MeetingDetail from './MeetingDetail'
+import CommentsPanel from '@/components/CommentsPanel'
 
 export default async function MeetingDetailPage({
   params,
@@ -79,6 +80,12 @@ export default async function MeetingDetailPage({
         participantMap={participantMap}
         prevWeekStart={toISO(prevStart)}
         prevWeekEnd={toISO(prevEnd)}
+      />
+      <CommentsPanel
+        apiBase={`/api/projects/${id}/comments`}
+        objectType="meeting"
+        objectId={mid}
+        authorType="researcher"
       />
     </div>
   )
