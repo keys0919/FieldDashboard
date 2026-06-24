@@ -55,6 +55,7 @@ function MeetingRowMenu({
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (!open) return
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false)
@@ -63,7 +64,7 @@ function MeetingRowMenu({
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
+  }, [open])
 
   return (
     <div ref={ref} className="relative shrink-0">
@@ -135,6 +136,7 @@ export default function MeetingListClient({ projectId, meetings: initial }: Prop
   const [adHocTitle, setAdHocTitle] = useState('')
 
   useEffect(() => {
+    if (!showTypeMenu) return
     function handle(e: MouseEvent) {
       if (typeMenuRef.current && !typeMenuRef.current.contains(e.target as Node)) {
         setShowTypeMenu(false)
@@ -142,7 +144,7 @@ export default function MeetingListClient({ projectId, meetings: initial }: Prop
     }
     document.addEventListener('mousedown', handle)
     return () => document.removeEventListener('mousedown', handle)
-  }, [])
+  }, [showTypeMenu])
 
   const regularMeetings = meetings.filter(m => m.meeting_type === 'regular')
   const { week_start: thisWeekStart } = getThisWeekRange()
@@ -261,18 +263,20 @@ export default function MeetingListClient({ projectId, meetings: initial }: Prop
           <p className="text-sm">아직 생성된 회의가 없습니다</p>
         </div>
       ) : (
-        <div className="glass-card rounded-xl overflow-hidden">
+        <div className="glass-card rounded-xl">
           {displayed.map((m, i) => {
             const isRegular = m.meeting_type === 'regular'
             const regularSeq = isRegular
               ? regularMeetings.findIndex(x => x.id === m.id) + 1
               : 0
+            const isFirst = i === 0
+            const isLast = i === displayed.length - 1
             return (
               <div
                 key={m.id}
-                className={`flex items-center gap-4 px-5 py-4 hover:bg-surface-container/50 transition-colors ${i > 0 ? 'border-t border-outline-variant/40' : ''}`}
+                className={`flex items-center hover:bg-surface-container/50 transition-colors ${i > 0 ? 'border-t border-outline-variant/40' : ''} ${isFirst ? 'rounded-t-xl' : ''} ${isLast ? 'rounded-b-xl' : ''}`}
               >
-                <Link href={`/projects/${projectId}/meetings/${m.id}`} className="flex-1 flex items-center gap-4 min-w-0">
+                <Link href={`/projects/${projectId}/meetings/${m.id}`} className="flex-1 flex items-center gap-4 min-w-0 px-5 py-4">
                   {isRegular ? (
                     <>
                       <span className="text-[11px] font-bold text-violet-600 font-mono w-8 shrink-0">
@@ -292,11 +296,13 @@ export default function MeetingListClient({ projectId, meetings: initial }: Prop
                     </>
                   )}
                 </Link>
-                <MeetingRowMenu
-                  projectId={projectId}
-                  meetingId={m.id}
-                  onDelete={() => setMeetings(prev => prev.filter(x => x.id !== m.id))}
-                />
+                <div className="pr-5">
+                  <MeetingRowMenu
+                    projectId={projectId}
+                    meetingId={m.id}
+                    onDelete={() => setMeetings(prev => prev.filter(x => x.id !== m.id))}
+                  />
+                </div>
               </div>
             )
           })}
