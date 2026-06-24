@@ -315,7 +315,7 @@ export default function MeetingDetail({
           회의 목록
         </Link>
 
-        {/* Row 2: 제목 + PDF 버튼 */}
+        {/* Row 2: 제목 + 버튼 그룹 */}
         <div className="flex items-center justify-between gap-4">
           <div>
             {isAdHoc && (
@@ -329,13 +329,24 @@ export default function MeetingDetail({
                 : `${String(seq).padStart(2, '0')}차 정례회의`}
             </h1>
           </div>
-          <button
-            onClick={() => window.print()}
-            className="print:hidden flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-semibold bg-primary text-on-primary rounded-full hover:opacity-90 transition-opacity shrink-0"
-          >
-            <span className="material-symbols-outlined text-[14px]">download</span>
-            PDF 저장
-          </button>
+          <div className="print:hidden flex items-center gap-2 shrink-0">
+            {!isClientView && !isAdHoc && (
+              <button
+                onClick={() => setShowImport(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-[13px]">{showImport ? 'close' : 'edit'}</span>
+                {showImport ? '닫기' : '내용 입력 / 수정'}
+              </button>
+            )}
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-semibold bg-primary text-on-primary rounded-full hover:opacity-90 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-[14px]">download</span>
+              PDF 저장
+            </button>
+          </div>
         </div>
 
         {/* Row 3: 기간/날짜 + 액티비티 색인 (regular만) */}
@@ -409,19 +420,6 @@ export default function MeetingDetail({
         <div className="hidden print:flex items-center gap-2 mb-6 pb-4 border-b border-outline-variant">
           <h2 className="text-base font-bold text-on-surface">회의 현황</h2>
         </div>
-
-        {/* 현황 탭 액션 버튼 */}
-        {!isClientView && (
-          <div className="print:hidden mb-6 flex items-center justify-end gap-2">
-            <button
-              onClick={() => setShowImport(v => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
-            >
-              <span className="material-symbols-outlined text-[13px]">{showImport ? 'close' : 'edit'}</span>
-              {showImport ? '닫기' : '내용 입력 / 수정'}
-            </button>
-          </div>
-        )}
 
         {showImport && (
           <div className="print:hidden mb-6 space-y-2 bg-surface-container rounded-xl p-3 border border-outline-variant">
