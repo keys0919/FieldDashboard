@@ -384,7 +384,7 @@ export default function MeetingDetail({
       </div>
 
       {/* ── 회의 현황 탭 ── */}
-      <div className={activeTab === 'overview' ? '' : 'hidden print:block'}>
+      <div className={activeTab === 'overview' ? '' : 'hidden'}>
 
         {/* print용 섹션 구분 */}
         <div className="hidden print:flex items-center gap-2 mb-6 pb-4 border-b border-outline-variant">
@@ -464,7 +464,7 @@ export default function MeetingDetail({
       </div>
 
       {/* ── 회의록 탭 ── */}
-      <div className={activeTab === 'minutes' ? '' : hasMinutes ? 'hidden print:block' : 'hidden'}>
+      <div className={activeTab === 'minutes' ? '' : 'hidden'}>
 
         {/* print 섹션 구분 */}
         <div className="hidden print:flex items-center gap-2 mb-6 pb-4 border-t border-outline-variant pt-8 mt-8">
