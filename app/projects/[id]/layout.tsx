@@ -2,6 +2,7 @@ import { createServerClient } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ProjectSidebar from '@/components/ProjectSidebar'
+import RefDocsDropdown from '@/components/RefDocsDropdown'
 
 export default async function ProjectLayout({
   children,
@@ -15,7 +16,7 @@ export default async function ProjectLayout({
 
   const { data: project } = await sb
     .from('projects')
-    .select('id, name, client, share_token')
+    .select('id, name, client, share_token, documents')
     .eq('id', id)
     .single()
 
@@ -41,6 +42,10 @@ export default async function ProjectLayout({
             <span className="text-sm font-bold text-on-surface truncate">{project.name}</span>
           </div>
         </div>
+        <RefDocsDropdown
+          projectId={id}
+          documents={(project.documents as { label: string; url: string; type: string }[]) ?? []}
+        />
 
       </header>
 
