@@ -8,6 +8,8 @@ interface MeetingRow {
   id: string
   week_start: string
   week_end: string
+  meeting_type: 'regular' | 'ad_hoc'
+  title: string | null
 }
 
 interface Props {
@@ -19,6 +21,11 @@ function fmtWeek(start: string, end: string) {
   const [, sm, sd] = start.split('-')
   const [, em, ed] = end.split('-')
   return `${Number(sm)}/${Number(sd)} – ${Number(em)}/${Number(ed)}`
+}
+
+function fmtDate(d: string) {
+  const [, m, day] = d.split('-')
+  return `${Number(m)}/${Number(day)}`
 }
 
 function getThisWeekRange() {
@@ -121,17 +128,35 @@ export default function MeetingListClient({ projectId, meetings: initial }: Prop
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { week_start: thisWeekStart } = getThisWeekRange()
-  const thisWeekExists = meetings.some(m => m.week_start === thisWeekStart)
+  const [showTypeMenu, setShowTypeMenu] = useState(false)
+  const typeMenuRef = useRef<HTMLDivElement>(null)
 
-  async function handleCreate() {
+  const [showAdHocForm, setShowAdHocForm] = useState(false)
+  const [adHocTitle, setAdHocTitle] = useState('')
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (typeMenuRef.current && !typeMenuRef.current.contains(e.target as Node)) {
+        setShowTypeMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
+  }, [])
+
+  const regularMeetings = meetings.filter(m => m.meeting_type === 'regular')
+  const { week_start: thisWeekStart } = getThisWeekRange()
+  const thisWeekExists = regularMeetings.some(m => m.week_start === thisWeekStart)
+
+  async function handleCreateRegular() {
+    setShowTypeMenu(false)
     setError(null)
     setCreating(true)
     const { week_start, week_end } = getThisWeekRange()
     const res = await fetch(`/api/projects/${projectId}/meetings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ week_start, week_end }),
+      body: JSON.stringify({ meeting_type: 'regular', week_start, week_end }),
     })
     const data = await res.json()
     setCreating(false)
@@ -139,27 +164,95 @@ export default function MeetingListClient({ projectId, meetings: initial }: Prop
     router.push(`/projects/${projectId}/meetings/${data.id}`)
   }
 
-  // 화면 표시: 최신 회의가 위 (내림차순), seq는 오름차순 기준
+  async function handleCreateAdHoc() {
+    if (!adHocTitle.trim()) return
+    setError(null)
+    setCreating(true)
+    const today = new Date().toISOString().split('T')[0]
+    const res = await fetch(`/api/projects/${projectId}/meetings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ meeting_type: 'ad_hoc', title: adHocTitle.trim(), meeting_date: today }),
+    })
+    const data = await res.json()
+    setCreating(false)
+    if (!res.ok) { setError(data.error ?? '오류가 발생했습니다'); return }
+    router.push(`/projects/${projectId}/meetings/${data.id}`)
+  }
+
   const displayed = [...meetings].reverse()
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-xl font-bold text-on-surface tracking-tight">정례회의</h1>
+        <h1 className="text-xl font-bold text-on-surface tracking-tight">회의</h1>
         <div className="flex items-center gap-3">
           {thisWeekExists && (
-            <span className="text-xs text-on-surface-variant">이번 주 회의가 이미 있습니다</span>
+            <span className="text-xs text-on-surface-variant">이번 주 정례회의가 이미 있습니다</span>
           )}
-          <button
-            onClick={handleCreate}
-            disabled={creating || thisWeekExists}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-full hover:opacity-90 disabled:opacity-40 transition-opacity"
-          >
-            <span className="material-symbols-outlined text-[14px]">add</span>
-            {creating ? '생성 중...' : '회의 생성'}
-          </button>
+          <div ref={typeMenuRef} className="relative">
+            <button
+              onClick={() => setShowTypeMenu(v => !v)}
+              disabled={creating}
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-full hover:opacity-90 disabled:opacity-40 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-[14px]">add</span>
+              회의 생성
+              <span className="material-symbols-outlined text-[14px]">expand_more</span>
+            </button>
+            {showTypeMenu && (
+              <div className="absolute right-0 top-9 z-50 w-48 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg overflow-hidden">
+                <button
+                  onClick={handleCreateRegular}
+                  disabled={thisWeekExists}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-on-surface hover:bg-surface-container transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-[15px] text-violet-500">event_repeat</span>
+                  정례회의 (이번 주)
+                </button>
+                <div className="border-t border-outline-variant/40" />
+                <button
+                  onClick={() => { setShowTypeMenu(false); setShowAdHocForm(true) }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-on-surface hover:bg-surface-container transition-colors text-left"
+                >
+                  <span className="material-symbols-outlined text-[15px] text-sky-500">event_note</span>
+                  일반 회의
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {showAdHocForm && (
+        <div className="bg-surface-container rounded-xl p-3 border border-outline-variant flex items-center gap-2">
+          <input
+            autoFocus
+            value={adHocTitle}
+            onChange={e => setAdHocTitle(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') handleCreateAdHoc()
+              if (e.key === 'Escape') { setShowAdHocForm(false); setAdHocTitle('') }
+            }}
+            placeholder="회의 제목을 입력하세요"
+            className="flex-1 bg-surface border border-outline-variant rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary/50 text-on-surface"
+          />
+          <button
+            onClick={handleCreateAdHoc}
+            disabled={creating || !adHocTitle.trim()}
+            className="px-3 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-full hover:opacity-90 disabled:opacity-40 transition-opacity"
+          >
+            {creating ? '생성 중...' : '생성'}
+          </button>
+          <button
+            onClick={() => { setShowAdHocForm(false); setAdHocTitle('') }}
+            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant"
+          >
+            <span className="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </div>
+      )}
+
       {error && <p className="text-xs text-rose-600">{error}</p>}
 
       {meetings.length === 0 ? (
@@ -170,19 +263,34 @@ export default function MeetingListClient({ projectId, meetings: initial }: Prop
       ) : (
         <div className="glass-card rounded-xl overflow-hidden">
           {displayed.map((m, i) => {
-            const seq = meetings.findIndex(x => x.id === m.id) + 1
+            const isRegular = m.meeting_type === 'regular'
+            const regularSeq = isRegular
+              ? regularMeetings.findIndex(x => x.id === m.id) + 1
+              : 0
             return (
               <div
                 key={m.id}
                 className={`flex items-center gap-4 px-5 py-4 hover:bg-surface-container/50 transition-colors ${i > 0 ? 'border-t border-outline-variant/40' : ''}`}
               >
                 <Link href={`/projects/${projectId}/meetings/${m.id}`} className="flex-1 flex items-center gap-4 min-w-0">
-                  <span className="text-[11px] font-bold text-on-surface-variant font-mono w-8 shrink-0">
-                    {String(seq).padStart(2, '0')}차
-                  </span>
-                  <span className="text-sm font-medium text-on-surface">
-                    {fmtWeek(m.week_start, m.week_end)}
-                  </span>
+                  {isRegular ? (
+                    <>
+                      <span className="text-[11px] font-bold text-violet-600 font-mono w-8 shrink-0">
+                        {String(regularSeq).padStart(2, '0')}차
+                      </span>
+                      <span className="text-sm font-medium text-on-surface">
+                        정례회의 · {fmtWeek(m.week_start, m.week_end)}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[11px] font-bold text-sky-600 font-mono w-8 shrink-0 text-center">일반</span>
+                      <div className="flex-1 min-w-0 flex items-baseline gap-3">
+                        <span className="text-sm font-medium text-on-surface truncate">{m.title ?? '일반 회의'}</span>
+                        <span className="text-[11px] font-mono text-on-surface-variant shrink-0">{fmtDate(m.week_start)}</span>
+                      </div>
+                    </>
+                  )}
                 </Link>
                 <MeetingRowMenu
                   projectId={projectId}

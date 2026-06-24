@@ -32,7 +32,7 @@ export default async function ShareMeetingDetailPage({
     { data: participants },
     { data: items },
   ] = await Promise.all([
-    sb.from('meetings').select('id, week_start').eq('project_id', id).order('week_start'),
+    sb.from('meetings').select('id, week_start, meeting_type').eq('project_id', id).order('week_start'),
     sb.from('activities')
       .select('id, participant_id, type_key, status')
       .eq('project_id', id)
@@ -53,12 +53,13 @@ export default async function ShareMeetingDetailPage({
   ])
 
   const meetings = allMeetings ?? []
-  const seq = meetings.findIndex(m => m.id === mid) + 1
+  const regularMeetings = meetings.filter(m => m.meeting_type === 'regular')
+  const seq = regularMeetings.findIndex(m => m.id === mid) + 1
 
   const seqMap: Record<string, number> = {}
-  meetings.forEach((m, i) => { seqMap[m.id] = i + 1 })
+  regularMeetings.forEach((m, i) => { seqMap[m.id] = i + 1 })
 
-  const validMeetingIds = new Set(meetings.slice(0, seq).map(m => m.id))
+  const validMeetingIds = new Set(regularMeetings.slice(0, seq).map(m => m.id))
 
   const typeLabels: Record<string, string> = {}
   for (const t of project.activity_types ?? []) typeLabels[t.key] = t.label

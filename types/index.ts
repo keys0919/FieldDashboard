@@ -125,6 +125,8 @@ export interface MinutesData {
 export interface Meeting {
   id: string
   project_id: string
+  meeting_type: 'regular' | 'ad_hoc'
+  title: string | null
   week_start: string
   week_end: string
   schedule_comment_prev: string | null

@@ -9,7 +9,7 @@ export default async function MeetingsPage({ params }: { params: Promise<{ id: s
   const [{ data: project }, { data: meetings }] = await Promise.all([
     sb.from('projects').select('id, name').eq('id', id).single(),
     sb.from('meetings')
-      .select('id, week_start, week_end, created_at')
+      .select('id, week_start, week_end, meeting_type, title, created_at')
       .eq('project_id', id)
       .order('week_start', { ascending: true }),
   ])

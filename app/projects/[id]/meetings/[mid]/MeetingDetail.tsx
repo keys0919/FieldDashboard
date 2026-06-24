@@ -35,6 +35,8 @@ interface MinutesData {
 
 interface Meeting {
   id: string
+  meeting_type: 'regular' | 'ad_hoc'
+  title: string | null
   week_start: string
   week_end: string
   schedule_comment_prev: string | null
@@ -213,8 +215,10 @@ export default function MeetingDetail({
 }: Props) {
   const router = useRouter()
 
-  // 탭 상태
-  const [activeTab, setActiveTab] = useState<'overview' | 'minutes'>('overview')
+  const isAdHoc = meeting.meeting_type === 'ad_hoc'
+
+  // 탭 상태: ad_hoc은 항상 minutes
+  const [activeTab, setActiveTab] = useState<'overview' | 'minutes'>(isAdHoc ? 'minutes' : 'overview')
 
   // 회의 현황 탭 — JSON 입력
   const [showImport, setShowImport] = useState(false)
@@ -308,14 +312,23 @@ export default function MeetingDetail({
           className="print:hidden flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-on-surface transition-colors mb-2"
         >
           <span className="material-symbols-outlined text-[13px]">arrow_back</span>
-          정례회의 목록
+          회의 목록
         </Link>
 
         {/* Row 2: 제목 + PDF 버튼 */}
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-xl font-bold text-on-surface tracking-tight">
-            {String(seq).padStart(2, '0')}차 정례회의
-          </h1>
+          <div>
+            {isAdHoc && (
+              <span className="inline-block text-[10px] font-bold text-sky-600 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full mb-1.5">
+                일반 회의
+              </span>
+            )}
+            <h1 className="text-xl font-bold text-on-surface tracking-tight">
+              {isAdHoc
+                ? (meeting.title ?? '일반 회의')
+                : `${String(seq).padStart(2, '0')}차 정례회의`}
+            </h1>
+          </div>
           <button
             onClick={() => window.print()}
             className="print:hidden flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-semibold bg-primary text-on-primary rounded-full hover:opacity-90 transition-opacity shrink-0"
@@ -325,8 +338,12 @@ export default function MeetingDetail({
           </button>
         </div>
 
-        {/* Row 3: 기간 + 이번 주 액티비티 색인 */}
-        {(() => {
+        {/* Row 3: 기간/날짜 + 액티비티 색인 (regular만) */}
+        {isAdHoc ? (
+          <div className="mt-2 pl-1">
+            <span className="text-sm font-mono text-on-surface-variant">{fmtDate(meeting.week_start)}</span>
+          </div>
+        ) : (() => {
           const typeCount: Record<string, number> = {}
           for (const a of currActivities) {
             typeCount[a.type_key] = (typeCount[a.type_key] ?? 0) + 1
@@ -349,42 +366,44 @@ export default function MeetingDetail({
           )
         })()}
 
-        {/* 탭 */}
-        <div className="print:hidden flex gap-1 mt-5 border-b border-outline-variant">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 text-sm font-medium transition-colors relative ${
-              activeTab === 'overview'
-                ? 'text-primary'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            회의 현황
-            {activeTab === 'overview' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('minutes')}
-            className={`px-4 py-2 text-sm font-medium transition-colors relative flex items-center gap-1.5 ${
-              activeTab === 'minutes'
-                ? 'text-primary'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            회의록
-            {hasMinutes && activeTab !== 'minutes' && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-            )}
-            {activeTab === 'minutes' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
-            )}
-          </button>
-        </div>
+        {/* 탭: regular만 */}
+        {!isAdHoc && (
+          <div className="print:hidden flex gap-1 mt-5 border-b border-outline-variant">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`px-4 py-2 text-sm font-medium transition-colors relative ${
+                activeTab === 'overview'
+                  ? 'text-primary'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              회의 현황
+              {activeTab === 'overview' && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('minutes')}
+              className={`px-4 py-2 text-sm font-medium transition-colors relative flex items-center gap-1.5 ${
+                activeTab === 'minutes'
+                  ? 'text-primary'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              회의록
+              {hasMinutes && activeTab !== 'minutes' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              )}
+              {activeTab === 'minutes' && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* ── 회의 현황 탭 ── */}
-      <div className={activeTab === 'overview' ? '' : 'hidden'}>
+      {/* ── 회의 현황 탭: regular만 ── */}
+      <div className={!isAdHoc && activeTab === 'overview' ? '' : 'hidden'}>
 
         {/* print용 섹션 구분 */}
         <div className="hidden print:flex items-center gap-2 mb-6 pb-4 border-b border-outline-variant">
