@@ -12,6 +12,7 @@ const NAV = [
   { label: 'Calendar',     icon: 'calendar_today',   href: (id: string) => `/projects/${id}` },
   { label: 'Participants', icon: 'group',             href: (id: string) => `/projects/${id}/participants` },
   { label: 'Reports',      icon: 'analytics',        href: (id: string) => `/projects/${id}/reports` },
+  { label: 'Quotes',       icon: 'format_quote',     href: (id: string) => `/projects/${id}/quotes` },
   { label: 'Meetings',     icon: 'groups',           href: (id: string) => `/projects/${id}/meetings` },
   { label: '자료실',       icon: 'library_books',    href: (id: string) => `/projects/${id}/resources` },
 ]
