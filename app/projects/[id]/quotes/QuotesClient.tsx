@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 interface QuoteRow {
   id: string
@@ -24,15 +24,161 @@ interface Props {
   typeLabels: Record<string, string>
 }
 
-// 빈도 높은 순으로 정렬된 배열을 앞/뒤 교차 배치 → 시각적으로 크기 분산
-function distributeCloud(items: TagCloudItem[]): TagCloudItem[] {
+// 같은 발화에 함께 등장한 태그 쌍의 빈도를 계산
+function buildCoOccurrence(quotes: QuoteRow[]): Record<string, Record<string, number>> {
+  const m: Record<string, Record<string, number>> = {}
+  for (const q of quotes) {
+    const tags = q.tags ?? []
+    for (let i = 0; i < tags.length; i++) {
+      for (let j = i + 1; j < tags.length; j++) {
+        const [a, b] = [tags[i], tags[j]]
+        if (!m[a]) m[a] = {}
+        if (!m[b]) m[b] = {}
+        m[a][b] = (m[a][b] || 0) + 1
+        m[b][a] = (m[b][a] || 0) + 1
+      }
+    }
+  }
+  return m
+}
+
+// 한글/영문 혼합 텍스트 실제 너비 추정
+function estimateTextWidth(tag: string, fontSize: number): number {
+  let w = 0
+  for (const ch of tag) {
+    const code = ch.charCodeAt(0)
+    const isCJK =
+      (code >= 0xac00 && code <= 0xd7af) ||   // 한글
+      (code >= 0x4e00 && code <= 0x9fff) ||   // CJK 한자
+      (code >= 0x3040 && code <= 0x30ff)       // 히라가나·카타카나
+    w += isCJK ? fontSize * 0.88 : fontSize * 0.54
+  }
+  return w
+}
+
+function tagHalfSize(tag: string, fontSize: number) {
+  return {
+    hw: estimateTextWidth(tag, fontSize) / 2 + 5,
+    hh: fontSize * 0.60 + 3,
+  }
+}
+
+// co-occurrence greedy 순서 — 연관 태그끼리 인접하도록 정렬
+function orderByCoOccurrence(items: TagCloudItem[], coOcc: Record<string, Record<string, number>>): TagCloudItem[] {
+  if (items.length <= 2) return items
+  const remaining = new Map(items.map(it => [it.tag, it]))
   const result: TagCloudItem[] = []
-  let l = 0, r = items.length - 1
-  while (l <= r) {
-    result.push(items[l++])
-    if (l <= r) result.push(items[r--])
+  // 빈도 최고 태그부터 시작
+  result.push(items[0])
+  remaining.delete(items[0].tag)
+  while (remaining.size > 0) {
+    const cur = result[result.length - 1].tag
+    const nbrs = coOcc[cur] ?? {}
+    let best = '', bestScore = -1
+    for (const [tag] of remaining) {
+      const score = nbrs[tag] ?? 0
+      if (score > bestScore) { bestScore = score; best = tag }
+    }
+    if (!best) best = remaining.keys().next().value as string
+    result.push(remaining.get(best)!)
+    remaining.delete(best)
   }
   return result
+}
+
+// co-occurrence 기반 force-directed 배치 계산
+function runForceLayout(
+  items: TagCloudItem[],
+  coOcc: Record<string, Record<string, number>>,
+  W: number,
+  H: number,
+  fontSizeMap: Record<string, number>,
+): Record<string, { x: number; y: number }> {
+  if (items.length === 0) return {}
+
+  const tags = items.map(it => it.tag)
+  const pos: Record<string, { x: number; y: number; vx: number; vy: number }> = {}
+
+  // 태그 면적 기반 초기 배치: 크기 순으로 격자에 배치
+  const sorted = [...items].sort((a, b) => fontSizeMap[b.tag] - fontSizeMap[a.tag])
+  const cols = Math.ceil(Math.sqrt(items.length * 1.6))
+  sorted.forEach((item, i) => {
+    const col = i % cols
+    const row = Math.floor(i / cols)
+    const totalRows = Math.ceil(items.length / cols)
+    pos[item.tag] = {
+      x: (W / (cols + 1)) * (col + 1),
+      y: (H / (totalRows + 1)) * (row + 1),
+      vx: 0, vy: 0,
+    }
+  })
+
+  for (let iter = 0; iter < 300; iter++) {
+    const alpha = Math.max(0.015, 1 - iter / 280)
+    for (const t of tags) { pos[t].vx = 0; pos[t].vy = 0 }
+
+    // 척력: 실제 텍스트 크기 기반
+    for (let i = 0; i < tags.length; i++) {
+      for (let j = i + 1; j < tags.length; j++) {
+        const a = pos[tags[i]], b = pos[tags[j]]
+        const dx = b.x - a.x, dy = b.y - a.y
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1
+        const si = tagHalfSize(tags[i], fontSizeMap[tags[i]])
+        const sj = tagHalfSize(tags[j], fontSizeMap[tags[j]])
+        // x·y 축 분리: 가로 겹침과 세로 겹침 각각 처리
+        const overlapX = si.hw + sj.hw + 10 - Math.abs(dx)
+        const overlapY = si.hh + sj.hh + 8 - Math.abs(dy)
+        if (overlapX > 0 && overlapY > 0) {
+          // 실제 겹침 → 강하게 밀어냄
+          const force = (overlapX * overlapY) * 0.25 * alpha
+          pos[tags[i]].vx -= Math.sign(dx) * force
+          pos[tags[i]].vy -= Math.sign(dy) * force * 0.6
+          pos[tags[j]].vx += Math.sign(dx) * force
+          pos[tags[j]].vy += Math.sign(dy) * force * 0.6
+        } else {
+          // 겹침 없어도 약한 척력
+          const minDist = si.hw + sj.hw + 16
+          if (dist < minDist) {
+            const force = ((minDist - dist) / minDist) * 8 * alpha
+            pos[tags[i]].vx -= (dx / dist) * force
+            pos[tags[i]].vy -= (dy / dist) * force
+            pos[tags[j]].vx += (dx / dist) * force
+            pos[tags[j]].vy += (dy / dist) * force
+          }
+        }
+      }
+    }
+
+    // 인력: co-occurrence 쌍 (약하게 — 겹침 방지 우선)
+    for (const tagA of tags) {
+      const nbrs = coOcc[tagA]
+      if (!nbrs) continue
+      for (const [tagB, w] of Object.entries(nbrs)) {
+        if (!pos[tagB]) continue
+        const a = pos[tagA], b = pos[tagB]
+        const dx = b.x - a.x, dy = b.y - a.y
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1
+        const force = w * 0.25 * alpha
+        pos[tagA].vx += (dx / dist) * force
+        pos[tagA].vy += (dy / dist) * force
+      }
+    }
+
+    // 중심 인력
+    for (const t of tags) {
+      pos[t].vx += (W / 2 - pos[t].x) * 0.035 * alpha
+      pos[t].vy += (H / 2 - pos[t].y) * 0.04 * alpha
+    }
+
+    // 위치 업데이트 + 경계 클램프
+    for (const t of tags) {
+      const { hw, hh } = tagHalfSize(t, fontSizeMap[t])
+      pos[t].x = Math.max(hw + 6, Math.min(W - hw - 6, pos[t].x + pos[t].vx))
+      pos[t].y = Math.max(hh + 6, Math.min(H - hh - 6, pos[t].y + pos[t].vy))
+    }
+  }
+
+  return Object.fromEntries(tags.map(t => [t, { x: pos[t].x, y: pos[t].y }]))
 }
 
 const CLOUD_COLORS = [
@@ -54,6 +200,7 @@ function fmtDate(d: string) {
 
 export default function QuotesClient({ quotes, tagCloud, participantMap, typeLabels }: Props) {
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [hoveredTag, setHoveredTag] = useState<string | null>(null)
 
   const filtered = selectedTag
     ? quotes.filter(q => q.tags.includes(selectedTag))
@@ -69,20 +216,48 @@ export default function QuotesClient({ quotes, tagCloud, participantMap, typeLab
     colorMap[tag] = CLOUD_COLORS[i % CLOUD_COLORS.length]
   })
 
-  const displayCloud = distributeCloud([...tagCloud])
-
   function toggleTag(tag: string) {
     setSelectedTag(prev => prev === tag ? null : tag)
   }
 
-  function cloudStyle(count: number) {
+  function fontSizeFor(count: number) {
     const ratio = max > min ? (count - min) / (max - min) : 0.5
-    return {
-      fontSize: `${Math.round(11 + ratio * 42)}px`,       // 11px → 53px
-      fontWeight: Math.round(3 + ratio * 5) * 100,         // 300 → 800
-      lineHeight: 1.2,
-    }
+    return Math.round(12 + ratio * 26)   // 12px → 38px
   }
+
+  function fontWeightFor(count: number) {
+    const ratio = max > min ? (count - min) / (max - min) : 0.5
+    return Math.round(3 + ratio * 5) * 100
+  }
+
+  const CLOUD_W = 660
+  const CLOUD_H = 360
+
+  const fontSizeMap = useMemo(() => {
+    const m: Record<string, number> = {}
+    tagCloud.forEach(({ tag, count }) => { m[tag] = fontSizeFor(count) })
+    return m
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tagCloud, min, max])
+
+  const coOccurrence = useMemo(() => buildCoOccurrence(quotes), [quotes])
+
+  const orderedCloud = useMemo(
+    () => orderByCoOccurrence(tagCloud, coOccurrence),
+    [tagCloud, coOccurrence],
+  )
+
+  const positions = useMemo(
+    () => runForceLayout(orderedCloud, coOccurrence, CLOUD_W, CLOUD_H, fontSizeMap),
+    [orderedCloud, coOccurrence, fontSizeMap],
+  )
+
+  // hover 중인 태그와 co-occur하는 태그 Set
+  const hoveredRelated = useMemo(() => {
+    if (!hoveredTag) return null
+    const nbrs = coOccurrence[hoveredTag]
+    return nbrs ? new Set(Object.keys(nbrs)) : new Set<string>()
+  }, [hoveredTag, coOccurrence])
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -94,7 +269,7 @@ export default function QuotesClient({ quotes, tagCloud, participantMap, typeLab
       </div>
 
       {/* 태그 클라우드 */}
-      {displayCloud.length > 0 && (
+      {tagCloud.length > 0 && (
         <div className="rounded-xl overflow-hidden border border-outline-variant/50"
              style={{ background: 'linear-gradient(135deg, #faf5ff 0%, #eff6ff 50%, #f0fdf4 100%)' }}>
           <div className="flex items-center justify-between px-5 pt-4 pb-0">
@@ -109,26 +284,47 @@ export default function QuotesClient({ quotes, tagCloud, participantMap, typeLab
               </button>
             )}
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-3 justify-center px-6 py-6">
-            {displayCloud.map(({ tag, count }) => {
+          <div className="relative mx-4 my-4" style={{ height: `${CLOUD_H}px` }}>
+            {orderedCloud.map(({ tag, count }) => {
+              const p = positions[tag]
+              if (!p) return null
               const isSelected = selectedTag === tag
-              const isDimmed = !!selectedTag && !isSelected
+              const isHovered = hoveredTag === tag
+              const isRelated = !!hoveredRelated?.has(tag)
+
+              // 우선순위: 클릭 선택 > hover 연관 > hover 비연관
+              let opacity = 1
+              if (selectedTag) {
+                opacity = isSelected ? 1 : 0.18
+              } else if (hoveredTag) {
+                opacity = isHovered || isRelated ? 1 : 0.15
+              }
+
               const color = colorMap[tag]
-              const style = cloudStyle(count)
+              const showPill = isSelected || (isRelated && !!hoveredTag && !selectedTag)
 
               return (
                 <button
                   key={tag}
                   onClick={() => toggleTag(tag)}
+                  onMouseEnter={() => setHoveredTag(tag)}
+                  onMouseLeave={() => setHoveredTag(null)}
                   style={{
-                    ...style,
+                    position: 'absolute',
+                    left: `${((p.x / CLOUD_W) * 100).toFixed(2)}%`,
+                    top: `${((p.y / CLOUD_H) * 100).toFixed(2)}%`,
+                    transform: `translate(-50%, -50%) scale(${isHovered ? 1.12 : isRelated && hoveredTag ? 1.05 : 1})`,
+                    fontSize: `${fontSizeMap[tag]}px`,
+                    fontWeight: fontWeightFor(count),
+                    lineHeight: 1.2,
                     color: isSelected ? '#fff' : color,
-                    opacity: isDimmed ? 0.18 : 1,
-                    backgroundColor: isSelected ? color : 'transparent',
-                    padding: isSelected ? '2px 8px' : undefined,
-                    borderRadius: isSelected ? '9999px' : undefined,
+                    opacity,
+                    backgroundColor: showPill ? (isSelected ? color : color + '22') : 'transparent',
+                    padding: showPill ? '2px 10px' : undefined,
+                    borderRadius: showPill ? '9999px' : undefined,
+                    outline: isRelated && hoveredTag && !isSelected ? `1px solid ${color}44` : undefined,
                   }}
-                  className="leading-none transition-all duration-150 hover:scale-110"
+                  className="leading-none transition-all duration-150 whitespace-nowrap"
                 >
                   {tag}
                 </button>
