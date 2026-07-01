@@ -339,6 +339,27 @@ export default function MeetingDetail({
                 {showImport ? '닫기' : '내용 입력 / 수정'}
               </button>
             )}
+            {!isClientView && isAdHoc && (
+              <>
+                {minutesSaved && (
+                  <span className="text-[11px] text-emerald-600 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                    저장됨
+                  </span>
+                )}
+                <button
+                  onClick={() => {
+                    if (!showMinutesEdit && minutes) setMinutesJson(JSON.stringify(minutes, null, 2))
+                    setShowMinutesEdit(v => !v)
+                    setMinutesError(null)
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant text-[11px] font-medium text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[13px]">{showMinutesEdit ? 'close' : hasMinutes ? 'edit' : 'add'}</span>
+                  {showMinutesEdit ? '닫기' : hasMinutes ? '수정' : '입력'}
+                </button>
+              </>
+            )}
             <button
               onClick={() => window.print()}
               className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-semibold bg-primary text-on-primary rounded-full hover:opacity-90 transition-opacity"
@@ -488,8 +509,8 @@ export default function MeetingDetail({
           <h2 className="text-base font-bold text-on-surface">회의록</h2>
         </div>
 
-        {/* 편집 버튼 */}
-        {!isClientView && (
+        {/* 편집 버튼: regular만 (ad_hoc은 상단 헤더에 통합) */}
+        {!isClientView && !isAdHoc && (
           <div className="print:hidden mb-6 flex items-center justify-end gap-3">
             {minutesSaved && (
               <span className="text-[11px] text-emerald-600 flex items-center gap-1">
@@ -538,7 +559,7 @@ export default function MeetingDetail({
         )}
 
         {/* 구조화 표시 */}
-        {minutes && <MinutesDisplay minutes={minutes} />}
+        {minutes && <MinutesDisplay minutes={minutes} hideDate={isAdHoc} />}
 
         {!minutes && !showMinutesEdit && !isClientView && (
           <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant">
@@ -560,18 +581,21 @@ export default function MeetingDetail({
   )
 }
 
-function MinutesDisplay({ minutes }: { minutes: { date?: string; attendees?: string[]; topic?: string; discussions?: { item: string; notes: string }[]; decisions?: string[]; open_items?: string[]; next_steps?: { action: string; owner?: string; due?: string }[] } }) {
+function MinutesDisplay({ minutes, hideDate = false }: { minutes: { date?: string; attendees?: string[]; topic?: string; discussions?: { item: string; notes: string }[]; decisions?: string[]; open_items?: string[]; next_steps?: { action: string; owner?: string; due?: string }[] }; hideDate?: boolean }) {
   const fmtDue = (d: string) => {
     const [, m, day] = d.split('-')
     return `${Number(m)}/${Number(day)}`
   }
 
+  const showHeader = (!hideDate && minutes.date) || (minutes.attendees && minutes.attendees.length > 0)
+
   return (
     <div className="space-y-6">
 
-      {/* 헤더: 날짜 + 참석자 */}
+      {/* 헤더: 날짜(중복 시 생략) + 참석자 */}
+      {showHeader && (
       <div className="flex flex-wrap items-start gap-4 pb-5 border-b border-outline-variant/40">
-        {minutes.date && (
+        {!hideDate && minutes.date && (
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[16px] text-on-surface-variant">calendar_today</span>
             <span className="text-sm font-mono font-semibold text-on-surface">{minutes.date}</span>
@@ -588,6 +612,7 @@ function MinutesDisplay({ minutes }: { minutes: { date?: string; attendees?: str
           </div>
         )}
       </div>
+      )}
 
       {/* 주제 */}
       {minutes.topic && (
