@@ -646,8 +646,8 @@ function MinutesDisplay({ minutes, hideDate = false }: { minutes: { date?: strin
           <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">확정 사항</p>
           <ul className="space-y-2">
             {minutes.decisions.map((d, i) => (
-              <li key={i} className="flex items-start gap-2.5">
-                <span className="material-symbols-outlined text-[14px] text-emerald-600 shrink-0 mt-0.5">check_circle</span>
+              <li key={i} className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[14px] text-emerald-600 shrink-0">check_circle</span>
                 <span className="text-sm text-on-surface">{d}</span>
               </li>
             ))}
@@ -661,8 +661,8 @@ function MinutesDisplay({ minutes, hideDate = false }: { minutes: { date?: strin
           <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">미결</p>
           <ul className="space-y-2">
             {minutes.open_items.map((o, i) => (
-              <li key={i} className="flex items-start gap-2.5">
-                <span className="material-symbols-outlined text-[14px] text-amber-500 shrink-0 mt-0.5">pending</span>
+              <li key={i} className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[14px] text-amber-500 shrink-0">pending</span>
                 <span className="text-sm text-on-surface">{o}</span>
               </li>
             ))}
