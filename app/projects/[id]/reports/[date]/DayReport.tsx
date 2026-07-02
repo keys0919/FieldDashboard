@@ -214,7 +214,7 @@ export default function DayReport({
     <div className="max-w-3xl">
 
       {/* ── 문서 헤더 ── */}
-      <div className="mb-10 pb-6 border-b border-outline-variant">
+      <div className="mb-10 pb-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             {projectClient && (
